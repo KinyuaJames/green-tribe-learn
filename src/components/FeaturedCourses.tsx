@@ -17,12 +17,12 @@ interface Course {
 const courses: Course[] = [
   {
     id: '1',
-    title: 'Introduction to African Biophilic Design',
+    title: 'Biophilic Foundations: Culturally Rooted Design',
     description: 'Discover the fundamental principles of biophilic design with an African perspective, connecting traditional wisdom with modern sustainability practices.',
     image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=600',
-    price: 49.99,
+    price: 1000,
     instructor: 'Wangui Mwangi',
-    duration: '4 weeks'
+    duration: '3 hours'
   }
 ];
 
@@ -44,10 +44,10 @@ const CourseCard = ({ course }: { course: Course }) => {
         <p className="text-foreground/80 line-clamp-3">{course.description}</p>
       </CardContent>
       <CardFooter className="flex justify-between items-center">
-        <span className="font-bold text-lg text-biophilic-clay">${course.price}</span>
+        <span className="font-bold text-lg text-biophilic-clay">KES {course.price}</span>
         <Link to={`/course/${course.id}`}>
           <Button className="bg-biophilic-earth hover:bg-biophilic-earth/90 text-white">
-            Enroll Now
+            View Course
           </Button>
         </Link>
       </CardFooter>
