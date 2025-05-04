@@ -2,10 +2,17 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, LogOut, User } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { currentUser, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    setIsOpen(false);
+  };
 
   return (
     <nav className="bg-background border-b border-biophilic-sand/30 py-4 px-6 md:px-8 sticky top-0 z-50">
@@ -46,16 +53,30 @@ const Navbar = () => {
           <Link to="/about" className="text-foreground hover:text-biophilic-earth transition-colors">
             About
           </Link>
-          <Link to="/login">
-            <Button variant="outline" className="border-biophilic-earth text-biophilic-earth hover:bg-biophilic-earth hover:text-white">
-              Log In
-            </Button>
-          </Link>
-          <Link to="/signup">
-            <Button className="bg-biophilic-earth hover:bg-biophilic-earth/90 text-white">
-              Sign Up
-            </Button>
-          </Link>
+          
+          {currentUser ? (
+            <>
+              <Link to="/dashboard" className="text-foreground hover:text-biophilic-earth transition-colors">
+                Dashboard
+              </Link>
+              <Button variant="outline" onClick={handleLogout} className="border-biophilic-earth text-biophilic-earth hover:bg-biophilic-earth hover:text-white">
+                <LogOut className="h-4 w-4 mr-2" /> Log Out
+              </Button>
+            </>
+          ) : (
+            <>
+              <Link to="/login">
+                <Button variant="outline" className="border-biophilic-earth text-biophilic-earth hover:bg-biophilic-earth hover:text-white">
+                  Log In
+                </Button>
+              </Link>
+              <Link to="/signup">
+                <Button className="bg-biophilic-earth hover:bg-biophilic-earth/90 text-white">
+                  Sign Up
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
       </div>
 
@@ -91,18 +112,38 @@ const Navbar = () => {
             >
               About
             </Link>
-            <div className="flex flex-col gap-2 pt-2">
-              <Link to="/login" onClick={() => setIsOpen(false)}>
-                <Button variant="outline" className="w-full border-biophilic-earth text-biophilic-earth hover:bg-biophilic-earth hover:text-white">
-                  Log In
+            
+            {currentUser ? (
+              <>
+                <Link 
+                  to="/dashboard" 
+                  className="text-foreground hover:text-biophilic-earth transition-colors px-2 py-2"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Dashboard
+                </Link>
+                <Button 
+                  onClick={handleLogout} 
+                  variant="outline" 
+                  className="w-full border-biophilic-earth text-biophilic-earth hover:bg-biophilic-earth hover:text-white mt-2"
+                >
+                  <LogOut className="h-4 w-4 mr-2" /> Log Out
                 </Button>
-              </Link>
-              <Link to="/signup" onClick={() => setIsOpen(false)}>
-                <Button className="w-full bg-biophilic-earth hover:bg-biophilic-earth/90 text-white">
-                  Sign Up
-                </Button>
-              </Link>
-            </div>
+              </>
+            ) : (
+              <div className="flex flex-col gap-2 pt-2">
+                <Link to="/login" onClick={() => setIsOpen(false)}>
+                  <Button variant="outline" className="w-full border-biophilic-earth text-biophilic-earth hover:bg-biophilic-earth hover:text-white">
+                    Log In
+                  </Button>
+                </Link>
+                <Link to="/signup" onClick={() => setIsOpen(false)}>
+                  <Button className="w-full bg-biophilic-earth hover:bg-biophilic-earth/90 text-white">
+                    Sign Up
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -1,10 +1,11 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+import { useAuth } from '@/contexts/AuthContext';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -18,7 +19,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { toast } from "sonner";
 import { Mail, Lock } from "lucide-react";
 
 const formSchema = z.object({
@@ -29,6 +29,8 @@ const formSchema = z.object({
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -39,16 +41,18 @@ const Login = () => {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // For now, just show a toast and mock navigation
-    toast.success("Login successful!");
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsSubmitting(true);
     
-    // In a real app, this would handle authentication
-    // For now just navigate to home after a delay
-    setTimeout(() => {
-      navigate("/");
-    }, 1500);
+    try {
+      const success = await login(values.email, values.password);
+      
+      if (success) {
+        navigate("/dashboard");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -124,8 +128,12 @@ const Login = () => {
                   </Link>
                 </div>
                 
-                <Button type="submit" className="w-full bg-biophilic-earth hover:bg-biophilic-earth/90">
-                  Log in
+                <Button 
+                  type="submit" 
+                  className="w-full bg-biophilic-earth hover:bg-biophilic-earth/90"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Logging in...' : 'Log in'}
                 </Button>
                 
                 <div className="text-center pt-2">

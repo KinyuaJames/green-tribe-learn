@@ -1,30 +1,9 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-
-interface Course {
-  id: string;
-  title: string;
-  description: string;
-  image: string;
-  price: number;
-  instructor: string;
-  duration: string;
-}
-
-const courses: Course[] = [
-  {
-    id: '1',
-    title: 'Biophilic Foundations: Culturally Rooted Design',
-    description: 'Discover the fundamental principles of biophilic design with an African perspective, connecting traditional wisdom with modern sustainability practices.',
-    image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=600',
-    price: 1000,
-    instructor: 'Wangui Mwangi',
-    duration: '3 hours'
-  }
-];
+import { Course, getCourses } from '@/utils/database';
 
 const CourseCard = ({ course }: { course: Course }) => {
   return (
@@ -56,6 +35,13 @@ const CourseCard = ({ course }: { course: Course }) => {
 };
 
 const FeaturedCourses = () => {
+  const [courses, setCourses] = useState<Course[]>([]);
+  
+  useEffect(() => {
+    const allCourses = getCourses();
+    setCourses(allCourses);
+  }, []);
+
   return (
     <section className="py-16 bg-biophilic-sand/10">
       <div className="container mx-auto px-4">

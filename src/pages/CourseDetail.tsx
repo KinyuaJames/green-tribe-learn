@@ -1,183 +1,156 @@
 
-import React from 'react';
+import React, { useState } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { CheckCircle, FileText, Download, Video, Mic, MessageSquare } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { enrollUserInCourse, getCourseById } from '@/utils/database';
+import { toast } from 'sonner';
 
 const CourseDetail = () => {
   const { courseId } = useParams();
+  const navigate = useNavigate();
+  const { currentUser } = useAuth();
+  const [isEnrolling, setIsEnrolling] = useState(false);
   
-  // In a real application, you would fetch the course data based on courseId
-  const course = {
-    id: '1',
-    title: 'Biophilic Foundations: Culturally Rooted Design',
-    instructor: 'Wangui Mwangi',
-    instructorTitle: 'Biophilic Design Advocate & Strategist',
-    price: 1000,
-    priceUSD: 10,
-    duration: '3 hours',
-    moduleCount: 3,
-    lessonCount: 9,
-    description: 'Learn how to incorporate biophilic design principles with a focus on African cultural traditions and sustainable practices.',
-    image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=600',
-    modules: [
-      {
-        id: '1',
-        title: 'Understanding Biophilia',
-        lessons: [
-          {
-            id: '1.1',
-            title: 'What is Biophilic Design?',
-            description: 'The origins and principles of biophilic thinking',
-            type: 'video',
-            resources: ['video', 'pdf']
-          },
-          {
-            id: '1.2',
-            title: 'African Traditions and Nature-Based Living',
-            description: 'Overview of indigenous environmental design logic',
-            type: 'audio',
-            resources: ['audio', 'discussion']
-          },
-        ],
-      },
-      {
-        id: '2',
-        title: 'Principles in Practice',
-        lessons: [
-          {
-            id: '2.1',
-            title: 'Case Study – Mlolongo Heritage House',
-            description: 'Image gallery + short writeup on natural materials and spatial arrangement',
-            type: 'text',
-            resources: ['gallery']
-          },
-          {
-            id: '2.2',
-            title: 'Designing With the Five Senses',
-            description: 'Interactive self-assessment form and downloadable checklist',
-            type: 'interactive',
-            resources: ['pdf']
-          },
-        ],
-      },
-      {
-        id: '3',
-        title: 'Your Biophilic Design Journey',
-        lessons: [
-          {
-            id: '3.1',
-            title: 'Create Your Nature Map',
-            description: 'Assignment: Upload image or voice note describing your ideal nature-connected space',
-            type: 'assignment',
-            resources: ['upload']
-          },
-          {
-            id: '3.2',
-            title: 'Reflection & Closing',
-            description: 'Written or voice-submitted reflection and certificate completion',
-            type: 'reflection',
-            resources: ['text']
-          },
-        ],
-      },
-    ],
+  const course = getCourseById(courseId || '');
+  
+  if (!course) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-grow py-12 px-4">
+          <div className="container mx-auto text-center">
+            <h1 className="text-3xl font-bold text-biophilic-earth">Course Not Found</h1>
+            <p className="mt-4">The course you're looking for doesn't exist or has been removed.</p>
+            <Link to="/courses" className="mt-6 inline-block">
+              <Button>Browse Courses</Button>
+            </Link>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+  
+  const handleEnroll = () => {
+    if (!currentUser) {
+      toast.error('Please log in to enroll in this course');
+      navigate('/login');
+      return;
+    }
+    
+    setIsEnrolling(true);
+    
+    try {
+      const success = enrollUserInCourse(currentUser.id, course.id);
+      
+      if (success) {
+        toast.success('Successfully enrolled in course!');
+        navigate('/dashboard');
+      } else {
+        toast.error('You are already enrolled in this course');
+      }
+    } catch (error) {
+      toast.error('Failed to enroll in course');
+    } finally {
+      setIsEnrolling(false);
+    }
   };
 
+  const isEnrolled = currentUser?.enrolledCourses.includes(course.id);
+  
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      <main className="flex-grow">
-        {/* Course Header */}
-        <div className="bg-biophilic-earth/10 py-8 md:py-12 border-b border-biophilic-sand/30">
-          <div className="container mx-auto px-4">
-            <div className="flex flex-col md:flex-row gap-8">
-              <div className="md:w-2/3">
-                <Badge className="mb-4 bg-biophilic-earth">Course</Badge>
-                <h1 className="text-3xl md:text-4xl font-bold mb-4 text-biophilic-earth">{course.title}</h1>
-                <p className="text-lg text-foreground/80 mb-6">{course.description}</p>
-                
-                <div className="flex items-center space-x-4 mb-6">
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100" />
-                    <AvatarFallback>WM</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <div className="font-medium">{course.instructor}</div>
-                    <div className="text-sm text-foreground/70">{course.instructorTitle}</div>
-                  </div>
-                </div>
-                
-                <div className="flex flex-wrap gap-4 mb-6">
-                  <div className="flex items-center">
-                    <FileText className="mr-2 h-4 w-4" />
-                    <span>{course.moduleCount} Modules</span>
-                  </div>
-                  <div className="flex items-center">
-                    <CheckCircle className="mr-2 h-4 w-4" />
-                    <span>{course.lessonCount} Lessons</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Download className="mr-2 h-4 w-4" />
-                    <span>Resources</span>
-                  </div>
+      <div className="bg-biophilic-earth/5 pt-16 pb-12 px-4 sm:px-6 lg:px-8">
+        <div className="container mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+              <h1 className="text-3xl md:text-4xl font-bold text-biophilic-earth leading-tight">
+                {course.title}
+              </h1>
+              
+              <p className="mt-4 text-lg text-foreground/80">
+                {course.description}
+              </p>
+              
+              <div className="flex items-center mt-6 space-x-4">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={course.instructorImage} alt={course.instructor} />
+                  <AvatarFallback>{course.instructor.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="text-sm font-medium">Created by</p>
+                  <p className="text-biophilic-earth font-medium">{course.instructor}</p>
                 </div>
               </div>
-              
-              <div className="md:w-1/3">
-                <Card>
-                  <CardHeader className="pb-4">
-                    <div className="aspect-video overflow-hidden rounded-md mb-4">
-                      <img 
-                        src={course.image}
-                        alt={course.title}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-2xl">KES {course.price}</span>
-                      <span className="text-sm text-muted-foreground">≈ ${course.priceUSD} USD</span>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pb-4">
-                    <Button className="w-full bg-biophilic-earth hover:bg-biophilic-earth/90">
-                      Enroll Now
+            </div>
+            
+            <div className="lg:col-span-1">
+              <div className="bg-white rounded-lg shadow-sm border border-border p-6">
+                <div className="aspect-video rounded-md overflow-hidden mb-6">
+                  <img 
+                    src={course.image} 
+                    alt={course.title} 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                
+                <div className="flex justify-between items-center mb-6">
+                  <div className="text-2xl font-bold text-biophilic-clay">KES {course.price}</div>
+                </div>
+                
+                <div className="space-y-4">
+                  {isEnrolled ? (
+                    <Link to="/dashboard">
+                      <Button className="w-full bg-biophilic-leaf hover:bg-biophilic-leaf/90">
+                        Continue Learning
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Button 
+                      onClick={handleEnroll} 
+                      disabled={isEnrolling}
+                      className="w-full bg-biophilic-earth hover:bg-biophilic-earth/90"
+                    >
+                      {isEnrolling ? 'Processing...' : 'Enroll Now'}
                     </Button>
-                  </CardContent>
-                  <CardFooter className="border-t pt-4 text-sm text-muted-foreground">
-                    <div className="space-y-2 w-full">
-                      <div className="flex items-center">
-                        <CheckCircle className="mr-2 h-4 w-4 text-biophilic-earth" />
-                        <span>Lifetime Access</span>
-                      </div>
-                      <div className="flex items-center">
-                        <CheckCircle className="mr-2 h-4 w-4 text-biophilic-earth" />
-                        <span>Certificate of Completion</span>
-                      </div>
-                      <div className="flex items-center">
-                        <CheckCircle className="mr-2 h-4 w-4 text-biophilic-earth" />
-                        <span>Downloadable Resources</span>
-                      </div>
-                    </div>
-                  </CardFooter>
-                </Card>
+                  )}
+                </div>
+                
+                <div className="mt-6 space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Duration</span>
+                    <span className="font-medium">{course.duration}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Level</span>
+                    <span className="font-medium">{course.level || 'All Levels'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Students</span>
+                    <span className="font-medium">{course.studentsCount || 0}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Modules</span>
+                    <span className="font-medium">{course.modules.length}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-        
-        {/* Course Content */}
-        <div className="container mx-auto px-4 py-8 md:py-12">
+      </div>
+      
+      <main className="flex-grow py-12 px-4 sm:px-6 lg:px-8 bg-background">
+        <div className="container mx-auto">
           <Tabs defaultValue="curriculum">
-            <TabsList className="mb-8 w-full justify-start">
+            <TabsList className="mb-8">
               <TabsTrigger value="curriculum">Curriculum</TabsTrigger>
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="instructor">Instructor</TabsTrigger>
@@ -185,119 +158,115 @@ const CourseDetail = () => {
             </TabsList>
             
             <TabsContent value="curriculum">
-              <h2 className="text-2xl font-bold mb-6">Course Curriculum</h2>
-              
-              <Accordion type="single" collapsible className="w-full">
-                {course.modules.map(module => (
-                  <AccordionItem key={module.id} value={`module-${module.id}`}>
-                    <AccordionTrigger className="text-lg font-medium hover:no-underline">
-                      <div className="flex items-center">
-                        <Badge className="mr-2 bg-biophilic-earth">Module {module.id}</Badge>
-                        {module.title}
+              <div className="bg-white rounded-lg shadow-sm border border-border p-6">
+                <h2 className="text-2xl font-semibold text-biophilic-earth mb-6">Course Content</h2>
+                
+                <div className="space-y-6">
+                  {course.modules.map((module, index) => (
+                    <div key={module.id} className="border rounded-md overflow-hidden">
+                      <div className="bg-muted p-4 flex justify-between items-center">
+                        <h3 className="font-medium">
+                          Module {index + 1}: {module.title}
+                        </h3>
+                        <span className="text-sm text-muted-foreground">
+                          {module.lessons.length} lessons
+                        </span>
                       </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="border-l-2 border-biophilic-sand ml-4 pl-4">
-                      <div className="space-y-4">
-                        {module.lessons.map(lesson => (
-                          <div key={lesson.id} className="border rounded-md p-4 hover:bg-muted/50 transition-colors">
-                            <div className="flex items-start justify-between">
-                              <div>
-                                <h4 className="font-medium">Lesson {lesson.id}: {lesson.title}</h4>
-                                <p className="text-sm text-muted-foreground mt-1">
-                                  {lesson.description}
-                                </p>
-                              </div>
-                              <div className="flex items-center space-x-1">
-                                {lesson.resources.includes('video') && (
-                                  <Video className="h-4 w-4 text-muted-foreground" />
-                                )}
-                                {lesson.resources.includes('pdf') && (
-                                  <Download className="h-4 w-4 text-muted-foreground" />
-                                )}
-                                {lesson.resources.includes('audio') && (
-                                  <Mic className="h-4 w-4 text-muted-foreground" />
-                                )}
-                                {lesson.resources.includes('discussion') && (
-                                  <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                                )}
-                                {lesson.resources.includes('text') && (
-                                  <FileText className="h-4 w-4 text-muted-foreground" />
-                                )}
-                              </div>
+                      
+                      <div className="divide-y">
+                        {module.lessons.map((lesson) => (
+                          <div key={lesson.id} className="p-4 flex justify-between items-center">
+                            <div>
+                              <p className="font-medium">{lesson.title}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {lesson.type.charAt(0).toUpperCase() + lesson.type.slice(1)}
+                                {lesson.duration && ` • ${lesson.duration}`}
+                              </p>
                             </div>
+                            
+                            {isEnrolled ? (
+                              <Button size="sm" variant="outline">
+                                View
+                              </Button>
+                            ) : (
+                              <span className="text-sm text-muted-foreground">Locked</span>
+                            )}
                           </div>
                         ))}
                       </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </TabsContent>
             
             <TabsContent value="overview">
-              <h2 className="text-2xl font-bold mb-6">Course Overview</h2>
-              <div className="prose prose-lg max-w-none">
-                <p>
-                  In this foundational course on Biophilic Design with an African perspective, you will explore the 
-                  rich intersection of traditional ecological knowledge and contemporary sustainable design practices.
-                </p>
-                <p className="mt-4">
-                  Biophilic design reconnects humans with nature in the spaces we live, work, and learn. It draws on 
-                  the patterns and principles found in the natural world to promote well-being, creativity, and sustainability.
-                </p>
-                <h3 className="text-xl font-bold mt-6 mb-3">What You'll Learn</h3>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>The core principles of biophilic design and their scientific basis</li>
-                  <li>How African communities historically built in harmony with their environment</li>
-                  <li>Practical applications of biophilic design in contemporary spaces</li>
-                  <li>Methods to assess and enhance the sensory qualities of your spaces</li>
-                  <li>Techniques to create your own nature-connected environments</li>
-                </ul>
-                <h3 className="text-xl font-bold mt-6 mb-3">Course Requirements</h3>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>No prior design experience required</li>
-                  <li>An open mind and willingness to connect with nature</li>
-                  <li>Basic materials for optional sketching exercises</li>
-                </ul>
+              <div className="bg-white rounded-lg shadow-sm border border-border p-6">
+                <h2 className="text-2xl font-semibold text-biophilic-earth mb-6">Course Overview</h2>
+                <p className="text-foreground/80">{course.description}</p>
+                
+                {/* Tags */}
+                {course.tags && course.tags.length > 0 && (
+                  <div className="mt-8">
+                    <h3 className="text-lg font-medium mb-2">Tags</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {course.tags.map(tag => (
+                        <span key={tag} className="bg-biophilic-sand/20 px-3 py-1 rounded-full text-sm">
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </TabsContent>
             
             <TabsContent value="instructor">
-              <h2 className="text-2xl font-bold mb-6">About the Instructor</h2>
-              <div className="flex flex-col md:flex-row gap-8">
-                <div className="md:w-1/4">
-                  <Avatar className="h-32 w-32">
-                    <AvatarImage src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=300" />
-                    <AvatarFallback>WM</AvatarFallback>
+              <div className="bg-white rounded-lg shadow-sm border border-border p-6">
+                <h2 className="text-2xl font-semibold text-biophilic-earth mb-6">About the Instructor</h2>
+                
+                <div className="flex items-center space-x-4">
+                  <Avatar className="h-16 w-16">
+                    <AvatarImage src={course.instructorImage} alt={course.instructor} />
+                    <AvatarFallback>{course.instructor.charAt(0)}</AvatarFallback>
                   </Avatar>
-                </div>
-                <div className="md:w-3/4">
-                  <h3 className="text-xl font-bold mb-2">{course.instructor}</h3>
-                  <p className="text-foreground/70 mb-4">{course.instructorTitle}</p>
-                  <div className="prose prose-lg max-w-none">
-                    <p>
-                      Wangui Mwangi is a TEDx speaker on Biophilia, a Biophilic Design Advocate & Strategist, an EDGE Certified 
-                      Green Expert, a Bio-Leadership Fellow, a Nature-Inspired Coach, and Rewild Yourself 2025 Champion. 
-                      She is also an experienced Interior Designer.
-                    </p>
-                    <p className="mt-4">
-                      She is passionate about research and the incorporation of African vernacular architecture into 
-                      modern design and the interconnectedness between nature and humans. She has previously worked at 
-                      Italbuild Imports as an interior designer, at Kenya Green Building Society as a Youth chapter 
-                      board member, and as a research and dissemination lead.
-                    </p>
-                    <p className="mt-4">
-                      Wangui holds a bachelor's degree in Art and design from Kenyatta University and an Edge Green 
-                      building Certificate from International Finance Corporation.
-                    </p>
+                  <div>
+                    <h3 className="text-lg font-medium">{course.instructor}</h3>
+                    <p className="text-muted-foreground">Biophilic Design Expert</p>
                   </div>
                 </div>
+                
+                <p className="mt-6 text-foreground/80">
+                  With years of experience in sustainable design and biophilic principles, {course.instructor} brings a wealth of knowledge to this course. Their approach combines traditional African wisdom with modern sustainability practices.
+                </p>
               </div>
             </TabsContent>
             
             <TabsContent value="reviews">
-              <h2 className="text-2xl font-bold mb-6">Student Reviews</h2>
-              <p className="text-foreground/70">Be the first to leave a review for this course!</p>
+              <div className="bg-white rounded-lg shadow-sm border border-border p-6">
+                <h2 className="text-2xl font-semibold text-biophilic-earth mb-6">Student Reviews</h2>
+                
+                <div className="flex items-center mb-8">
+                  <div className="text-4xl font-bold text-biophilic-earth mr-4">
+                    {course.rating || 4.8}
+                  </div>
+                  <div>
+                    <div className="flex text-yellow-400 mb-1">
+                      {'★'.repeat(Math.round(course.rating || 4.8))}
+                      {'☆'.repeat(5 - Math.round(course.rating || 4.8))}
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Based on {course.studentsCount || 235} student ratings
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="space-y-6">
+                  <p className="text-center text-muted-foreground italic">
+                    No reviews yet. Be the first to leave one!
+                  </p>
+                </div>
+              </div>
             </TabsContent>
           </Tabs>
         </div>
