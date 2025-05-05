@@ -62,7 +62,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signup = async (fullName: string, email: string, password: string) => {
     try {
-      const user = createUser({ fullName, email, password });
+      // Make sure we're providing all the required fields based on the User type
+      const user = createUser({
+        fullName,
+        email,
+        password,
+        completedLessons: [],
+        badges: [],
+        completedQuizzes: [],
+        certificates: []
+      });
+      
       setCurrentUser(user);
       localStorage.setItem('currentUserId', user.id);
       toast.success('Account created successfully!');
