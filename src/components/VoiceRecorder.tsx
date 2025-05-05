@@ -1,27 +1,35 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Mic, MicOff, Play, Pause } from 'lucide-react';
+import { Mic, MicOff, Play, Pause, Upload, Check } from 'lucide-react';
 import { toast } from 'sonner';
+import { Progress } from '@/components/ui/progress';
 
 interface VoiceRecorderProps {
   onRecordingComplete?: (audioBlob: Blob) => void;
   maxDuration?: number; // in seconds
+  showSubmitButton?: boolean;
 }
 
 const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ 
   onRecordingComplete,
-  maxDuration = 180 // default to 3 minutes
+  maxDuration = 180, // default to 3 minutes
+  showSubmitButton = true
 }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [audioURL, setAudioURL] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [isSubmitted, setIsSubmitted] = useState(false);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
   const timerRef = useRef<number | null>(null);
+  
+  // Update progress calculation
+  const progressPercentage = (recordingTime / maxDuration) * 100;
   
   // Start recording function
   const startRecording = async () => {
@@ -42,8 +50,9 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
         const audioUrl = URL.createObjectURL(audioBlob);
         setAudioURL(audioUrl);
+        setAudioBlob(audioBlob);
         
-        if (onRecordingComplete) {
+        if (onRecordingComplete && !showSubmitButton) {
           onRecordingComplete(audioBlob);
         }
       };
@@ -101,6 +110,15 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
     setIsPlaying(!isPlaying);
   };
   
+  // Submit the recording
+  const submitRecording = () => {
+    if (audioBlob && onRecordingComplete) {
+      onRecordingComplete(audioBlob);
+      setIsSubmitted(true);
+      toast.success('Recording submitted successfully!');
+    }
+  };
+  
   // Handle audio player events
   const handleAudioEnded = () => {
     setIsPlaying(false);
@@ -112,6 +130,19 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
+  
+  // Cleanup function
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+      
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+        mediaRecorderRef.current.stop();
+      }
+    };
+  }, []);
   
   return (
     <div className="rounded-lg border p-4 bg-white">
@@ -127,6 +158,16 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
         </p>
       </div>
       
+      {isRecording && (
+        <div className="mb-4">
+          <Progress value={progressPercentage} className="h-2" />
+          <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+            <span>{formatTime(recordingTime)}</span>
+            <span>{formatTime(maxDuration)}</span>
+          </div>
+        </div>
+      )}
+      
       <div className="flex justify-center space-x-4">
         {isRecording ? (
           <Button 
@@ -141,7 +182,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
           <Button 
             className="bg-biophilic-earth hover:bg-biophilic-earth/90 rounded-full w-12 h-12 flex items-center justify-center"
             onClick={startRecording}
-            disabled={!!audioURL && isPlaying}
+            disabled={!!audioURL && isPlaying || isSubmitted}
           >
             <Mic size={20} />
           </Button>
@@ -153,6 +194,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
               variant="outline" 
               className="rounded-full w-12 h-12 flex items-center justify-center"
               onClick={togglePlayback}
+              disabled={isSubmitted}
             >
               {isPlaying ? <Pause size={20} /> : <Play size={20} />}
             </Button>
@@ -165,21 +207,45 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
             />
           </>
         )}
+        
+        {audioURL && showSubmitButton && !isSubmitted && (
+          <Button 
+            variant="outline" 
+            className="rounded-full w-12 h-12 flex items-center justify-center bg-green-50 border-green-200 hover:bg-green-100"
+            onClick={submitRecording}
+          >
+            <Upload size={20} className="text-green-600" />
+          </Button>
+        )}
+        
+        {isSubmitted && (
+          <div className="rounded-full w-12 h-12 flex items-center justify-center bg-green-100">
+            <Check size={20} className="text-green-600" />
+          </div>
+        )}
       </div>
       
-      {audioURL && (
+      {audioURL && !isSubmitted && (
         <div className="mt-4 text-center">
           <Button 
             variant="ghost" 
             size="sm"
             onClick={() => {
               setAudioURL(null);
+              setAudioBlob(null);
               setIsPlaying(false);
             }}
+            disabled={isSubmitted}
           >
             Record Again
           </Button>
         </div>
+      )}
+      
+      {isSubmitted && (
+        <p className="text-center text-sm text-green-600 mt-4">
+          Your recording has been submitted successfully!
+        </p>
       )}
     </div>
   );

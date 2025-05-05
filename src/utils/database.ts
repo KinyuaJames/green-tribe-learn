@@ -1,3 +1,4 @@
+
 // Type definitions for our data models
 export interface User {
   id: string;
@@ -52,6 +53,7 @@ export interface Course {
   tags?: string[];
   isFeatured?: boolean;
   isFree?: boolean;
+  isLocked?: boolean; // Whether the course is locked (requires payment)
   resources?: Resource[];
 }
 
@@ -68,6 +70,7 @@ export interface Module {
   id: string;
   title: string;
   lessons: Lesson[];
+  isLocked?: boolean; // Whether the module is locked (requires previous completion)
 }
 
 export interface Lesson {
@@ -78,6 +81,7 @@ export interface Lesson {
   content?: string;
   completed?: boolean;
   quiz?: Quiz;
+  isLocked?: boolean; // Whether the lesson is locked (requires previous completion)
 }
 
 export interface Quiz {
@@ -86,6 +90,7 @@ export interface Quiz {
   description?: string;
   questions: QuizQuestion[];
   passingScore: number;
+  timeLimit?: number; // Time limit in seconds
 }
 
 export interface QuizQuestion {
@@ -210,6 +215,7 @@ function getInitialCourses() {
       rating: 4.8,
       studentsCount: 235,
       isFeatured: true,
+      isLocked: true, // Paid course is locked until payment
       tags: ['biophilia', 'african-design', 'nature-architecture', 'green-living'],
       resources: [
         {
@@ -241,6 +247,7 @@ function getInitialCourses() {
         {
           id: 'm1',
           title: 'Understanding Biophilia',
+          isLocked: false,
           lessons: [
             {
               id: 'l1',
@@ -248,23 +255,27 @@ function getInitialCourses() {
               type: 'video',
               duration: '15 minutes',
               content: 'Biophilic design reconnects humans with nature in the spaces we live, work, and learn. It draws on the patterns and principles found in the natural world to promote well-being, creativity, and sustainability.',
+              isLocked: false
             },
             {
               id: 'l2',
               title: 'African Traditions and Nature-Based Living',
               type: 'text',
               duration: '30 minutes',
-              content: 'Many African communities historically built in close harmony with their environment. From the earthen homes of West Africa to the shaded compounds of East Africa, our traditions are full of lessons in thermal comfort, social space, and spiritual connectivity.'
+              content: 'Many African communities historically built in close harmony with their environment. From the earthen homes of West Africa to the shaded compounds of East Africa, our traditions are full of lessons in thermal comfort, social space, and spiritual connectivity.',
+              isLocked: true
             },
             {
               id: 'l3',
               title: 'Biophilia Quiz',
               type: 'quiz',
               duration: '10 minutes',
+              isLocked: true,
               quiz: {
                 id: 'quiz-001',
                 title: 'Biophilic Design Principles',
                 description: 'Test your understanding of biophilic design concepts',
+                timeLimit: 300, // 5 minutes
                 questions: [
                   {
                     id: 'q1',
@@ -308,40 +319,46 @@ function getInitialCourses() {
         {
           id: 'm2',
           title: 'Principles in Practice',
+          isLocked: true,
           lessons: [
             {
               id: 'l3',
               title: 'Case Study – Mlolongo Heritage House',
               type: 'text',
               duration: '20 minutes',
-              content: 'This family home, located in Mlolongo, integrates native vegetation, a shaded inner courtyard, natural clay walls, and rainwater harvesting. Built with both memory and function in mind, it\'s an example of biophilia meeting modern life.'
+              content: 'This family home, located in Mlolongo, integrates native vegetation, a shaded inner courtyard, natural clay walls, and rainwater harvesting. Built with both memory and function in mind, it\'s an example of biophilia meeting modern life.',
+              isLocked: true
             },
             {
               id: 'l4',
               title: 'Designing With the Five Senses',
               type: 'download',
               duration: '25 minutes',
-              content: 'Biophilic design is not only visual — it engages all five senses. How does your space sound? Smell? Feel? Use this checklist to assess your current environment.'
+              content: 'Biophilic design is not only visual — it engages all five senses. How does your space sound? Smell? Feel? Use this checklist to assess your current environment.',
+              isLocked: true
             }
           ]
         },
         {
           id: 'm3',
           title: 'Your Biophilic Design Journey',
+          isLocked: true,
           lessons: [
             {
               id: 'l5',
               title: 'Create Your Nature Map',
               type: 'assignment',
               duration: '45 minutes',
-              content: 'Describe your ideal biophilic space using any of the following: A sketch or image upload, a short written paragraph, or a voice note submission.'
+              content: 'Describe your ideal biophilic space using any of the following: A sketch or image upload, a short written paragraph, or a voice note submission.',
+              isLocked: true
             },
             {
               id: 'l6',
               title: 'Reflection & Closing',
               type: 'quiz',
               duration: '15 minutes',
-              content: 'How will you carry biophilic wisdom into your everyday life or work? Reflect on one actionable takeaway.'
+              content: 'How will you carry biophilic wisdom into your everyday life or work? Reflect on one actionable takeaway.',
+              isLocked: true
             }
           ]
         }
@@ -361,6 +378,7 @@ function getInitialCourses() {
       studentsCount: 523,
       isFree: true,
       isFeatured: true,
+      isLocked: false, // Free course is not locked
       tags: ['sustainability', 'eco-friendly', 'beginners'],
       resources: [
         {
@@ -386,36 +404,57 @@ function getInitialCourses() {
           type: 'video',
           url: '#',
           icon: 'video'
+        },
+        {
+          id: 'res-007',
+          title: 'Sustainable Living Podcast',
+          description: 'Listen to our podcast about sustainable living practices',
+          type: 'audio',
+          url: '#',
+          icon: 'mic'
+        },
+        {
+          id: 'res-008',
+          title: 'Recycling Reference Guide',
+          description: 'Learn what can and cannot be recycled in your area',
+          type: 'pdf',
+          url: '#',
+          icon: 'file'
         }
       ],
       modules: [
         {
           id: 'm1-free',
           title: 'Sustainability Basics',
+          isLocked: false,
           lessons: [
             {
               id: 'l1-free',
               title: 'What is Sustainability?',
               type: 'video',
               duration: '10 minutes',
-              content: 'An introduction to sustainability concepts and why they matter in today\'s world.'
+              content: 'An introduction to sustainability concepts and why they matter in today\'s world.',
+              isLocked: false
             },
             {
               id: 'l2-free',
               title: 'The Three Pillars of Sustainability',
               type: 'text',
               duration: '15 minutes',
-              content: 'Environmental, economic, and social sustainability - understanding how they interconnect and reinforce each other.'
+              content: 'Environmental, economic, and social sustainability - understanding how they interconnect and reinforce each other.',
+              isLocked: false
             },
             {
               id: 'l3-free',
               title: 'Sustainability Quiz',
               type: 'quiz',
               duration: '5 minutes',
+              isLocked: false,
               quiz: {
                 id: 'quiz-002',
                 title: 'Sustainability Basics Quiz',
                 description: 'Test your understanding of key sustainability concepts',
+                timeLimit: 180, // 3 minutes
                 questions: [
                   {
                     id: 'q1-free',
@@ -441,6 +480,150 @@ function getInitialCourses() {
                   }
                 ],
                 passingScore: 1
+              }
+            }
+          ]
+        },
+        {
+          id: 'm2-free',
+          title: 'Daily Sustainable Practices',
+          isLocked: true,
+          lessons: [
+            {
+              id: 'l4-free',
+              title: 'Reducing Household Waste',
+              type: 'video',
+              duration: '12 minutes',
+              content: 'Learn practical ways to reduce waste generation in your home through mindful consumption and reuse strategies.',
+              isLocked: true
+            },
+            {
+              id: 'l5-free',
+              title: 'Energy Conservation Tips',
+              type: 'text',
+              duration: '15 minutes',
+              content: 'Simple but effective ways to reduce your energy consumption and lower your carbon footprint.',
+              isLocked: true
+            },
+            {
+              id: 'l6-free',
+              title: 'Daily Practices Quiz',
+              type: 'quiz',
+              duration: '5 minutes',
+              isLocked: true,
+              quiz: {
+                id: 'quiz-003',
+                title: 'Sustainable Daily Practices Quiz',
+                description: 'Test your knowledge of everyday sustainable actions',
+                timeLimit: 240, // 4 minutes
+                questions: [
+                  {
+                    id: 'q3-free',
+                    text: 'Which of these actions saves the most energy in a typical home?',
+                    options: [
+                      { id: 'a', text: 'Turning off lights when not in use' },
+                      { id: 'b', text: 'Proper insulation of walls and ceilings' },
+                      { id: 'c', text: 'Using energy-efficient appliances' },
+                      { id: 'd', text: 'Unplugging electronics when not in use' }
+                    ],
+                    correctOptionId: 'b'
+                  },
+                  {
+                    id: 'q4-free',
+                    text: 'Which waste reduction strategy is most effective?',
+                    options: [
+                      { id: 'a', text: 'Recycling all materials' },
+                      { id: 'b', text: 'Reducing consumption in the first place' },
+                      { id: 'c', text: 'Using biodegradable packaging' },
+                      { id: 'd', text: 'Composting food waste' }
+                    ],
+                    correctOptionId: 'b'
+                  },
+                  {
+                    id: 'q5-free',
+                    text: 'What is the most effective way to reduce water usage in a household?',
+                    options: [
+                      { id: 'a', text: 'Taking shorter showers' },
+                      { id: 'b', text: 'Installing low-flow fixtures' },
+                      { id: 'c', text: 'Fixing leaky faucets' },
+                      { id: 'd', text: 'Using a dishwasher instead of hand washing' }
+                    ],
+                    correctOptionId: 'b'
+                  }
+                ],
+                passingScore: 2
+              }
+            }
+          ]
+        },
+        {
+          id: 'm3-free',
+          title: 'Sustainable Living Project',
+          isLocked: true,
+          lessons: [
+            {
+              id: 'l7-free',
+              title: 'Planning Your Sustainability Project',
+              type: 'text',
+              duration: '20 minutes',
+              content: 'Learn how to identify an area in your life where you can make a meaningful sustainable change and how to plan for its implementation.',
+              isLocked: true
+            },
+            {
+              id: 'l8-free',
+              title: 'Document Your Sustainability Journey',
+              type: 'assignment',
+              duration: '30 minutes',
+              content: 'Record a short audio reflection about your sustainability goals and the changes you plan to implement in your daily life.',
+              isLocked: true
+            },
+            {
+              id: 'l9-free',
+              title: 'Final Assessment',
+              type: 'quiz',
+              duration: '10 minutes',
+              isLocked: true,
+              quiz: {
+                id: 'quiz-004',
+                title: 'Sustainable Living Comprehensive Assessment',
+                description: 'Test your overall understanding of sustainable living concepts',
+                timeLimit: 300, // 5 minutes
+                questions: [
+                  {
+                    id: 'q6-free',
+                    text: 'Which approach best exemplifies the concept of circular economy?',
+                    options: [
+                      { id: 'a', text: 'Recycling all waste materials' },
+                      { id: 'b', text: 'Designing products for multiple lifecycles' },
+                      { id: 'c', text: 'Using biodegradable materials only' },
+                      { id: 'd', text: 'Purchasing carbon offsets' }
+                    ],
+                    correctOptionId: 'b'
+                  },
+                  {
+                    id: 'q7-free',
+                    text: 'What is the most important factor in creating lasting sustainable change?',
+                    options: [
+                      { id: 'a', text: 'Government regulations' },
+                      { id: 'b', text: 'Corporate responsibility' },
+                      { id: 'c', text: 'Individual habits and behaviors' },
+                      { id: 'd', text: 'Technological innovation' }
+                    ],
+                    correctOptionId: 'c'
+                  },
+                  {
+                    id: 'q8-free',
+                    text: 'Which statement best describes the relationship between sustainability and equity?',
+                    options: [
+                      { id: 'a', text: 'They are unrelated concepts' },
+                      { id: 'b', text: 'Sustainability often comes at the expense of equity' },
+                      { id: 'c', text: 'True sustainability must include social equity' },
+                      { id: 'd', text: 'Equity is important but separate from environmental concerns' }
+                    ],
+                    correctOptionId: 'c'
+                  }
+                ],
+                passingScore: 2
               }
             }
           ]
@@ -554,6 +737,9 @@ export const markLessonAsCompleted = (userId: string, lessonId: string): boolean
   if (!users[userIndex].completedLessons.includes(lessonId)) {
     users[userIndex].completedLessons.push(lessonId);
     localStorage.setItem('users', JSON.stringify(users));
+    
+    // After completing a lesson, check if we need to unlock new modules or lessons
+    unlockNextLessons(userId);
   }
   
   return true;
@@ -640,4 +826,69 @@ export const issueCertificate = (userId: string, courseId: string): boolean => {
   localStorage.setItem('users', JSON.stringify(users));
   
   return true;
+};
+
+// New function to unlock next lessons based on completion
+export const unlockNextLessons = (userId: string): void => {
+  const user = getUserById(userId);
+  if (!user) return;
+  
+  const courses = getCourses();
+  let hasChanges = false;
+  
+  // For each course the user is enrolled in
+  user.enrolledCourses.forEach(courseId => {
+    const courseIndex = courses.findIndex(course => course.id === courseId);
+    if (courseIndex === -1) return;
+    
+    const course = courses[courseIndex];
+    
+    // Process each module
+    for (let i = 0; i < course.modules.length; i++) {
+      const module = course.modules[i];
+      
+      // First module is always unlocked for enrolled users
+      if (i === 0) {
+        if (module.isLocked) {
+          module.isLocked = false;
+          module.lessons[0].isLocked = false; // First lesson is always unlocked
+          hasChanges = true;
+        }
+      } 
+      // For subsequent modules, check if previous module has enough completed lessons
+      else {
+        const previousModule = course.modules[i-1];
+        const previousModuleLessons = previousModule.lessons;
+        const completedLessonsInPreviousModule = previousModuleLessons.filter(
+          lesson => user.completedLessons.includes(lesson.id)
+        ).length;
+        
+        // If user completed at least half of the previous module's lessons
+        if (completedLessonsInPreviousModule >= Math.ceil(previousModuleLessons.length / 2)) {
+          if (module.isLocked) {
+            module.isLocked = false;
+            module.lessons[0].isLocked = false; // First lesson of the newly unlocked module
+            hasChanges = true;
+          }
+        }
+      }
+      
+      // For each module, unlock subsequent lessons based on completed lessons
+      if (!module.isLocked) {
+        for (let j = 0; j < module.lessons.length - 1; j++) {
+          const currentLesson = module.lessons[j];
+          const nextLesson = module.lessons[j + 1];
+          
+          if (user.completedLessons.includes(currentLesson.id) && nextLesson.isLocked) {
+            nextLesson.isLocked = false;
+            hasChanges = true;
+          }
+        }
+      }
+    }
+  });
+  
+  if (hasChanges) {
+    localStorage.setItem('courses', JSON.stringify(courses));
+  }
 };

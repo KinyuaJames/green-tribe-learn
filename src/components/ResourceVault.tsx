@@ -1,90 +1,82 @@
 
 import React from 'react';
-import { Resource } from '@/utils/database';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { BookOpen, Video, FileText, Book } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { FileText, Video, Mic, Link as LinkIcon, Download } from 'lucide-react';
+import { Resource } from '@/utils/database';
+import { toast } from 'sonner';
 
 interface ResourceVaultProps {
   resources: Resource[];
 }
 
+const ResourceTypeIcon = ({ type }: { type: string }) => {
+  switch (type) {
+    case 'pdf':
+      return <FileText className="h-5 w-5 text-biophilic-earth" />;
+    case 'video':
+      return <Video className="h-5 w-5 text-biophilic-earth" />;
+    case 'audio':
+      return <Mic className="h-5 w-5 text-biophilic-earth" />;
+    case 'link':
+      return <LinkIcon className="h-5 w-5 text-biophilic-earth" />;
+    default:
+      return <FileText className="h-5 w-5 text-biophilic-earth" />;
+  }
+};
+
 const ResourceVault: React.FC<ResourceVaultProps> = ({ resources }) => {
-  const getIcon = (iconName: string) => {
-    switch (iconName) {
-      case 'book-open':
-        return <BookOpen className="w-5 h-5" />;
-      case 'video':
-        return <Video className="w-5 h-5" />;
-      case 'file-text':
-        return <FileText className="w-5 h-5" />;
-      case 'book':
-        return <Book className="w-5 h-5" />;
-      default:
-        return <FileText className="w-5 h-5" />;
-    }
+  const handleResourceClick = (resource: Resource) => {
+    // In a real application, this would navigate to the resource or download it
+    toast.success(`Resource "${resource.title}" is now available in your Study Gallery`);
   };
-
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case 'pdf':
-        return 'PDF Document';
-      case 'video':
-        return 'Video Resource';
-      case 'audio':
-        return 'Audio Resource';
-      case 'link':
-        return 'External Link';
-      default:
-        return 'Resource';
-    }
-  };
-
+  
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-biophilic-earth">Resource Vault</CardTitle>
+        <div className="flex justify-between items-center">
+          <div>
+            <CardTitle className="text-biophilic-earth text-xl">Resource Vault</CardTitle>
+            <CardDescription>Complementary learning materials for your journey</CardDescription>
+          </div>
+          <Badge variant="outline" className="bg-biophilic-sand/10">
+            {resources.length} Resources
+          </Badge>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {resources.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">
-              No resources available for this course.
-            </p>
-          ) : (
-            resources.map((resource) => (
-              <div key={resource.id} className="flex items-start p-4 border rounded-lg">
-                <div className="bg-biophilic-earth/10 p-3 rounded-lg mr-4">
-                  {getIcon(resource.icon)}
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-medium">{resource.title}</h3>
-                      <p className="text-sm text-muted-foreground">{resource.description}</p>
-                    </div>
-                    <Badge variant="outline" className="ml-2">
-                      {getTypeLabel(resource.type)}
-                    </Badge>
-                  </div>
-                  <div className="mt-3">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-biophilic-earth border-biophilic-earth hover:bg-biophilic-earth/10"
-                      asChild
-                    >
-                      <a href={resource.url} target="_blank" rel="noopener noreferrer">
-                        {resource.type === 'pdf' ? 'Download PDF' : 
-                         resource.type === 'video' ? 'Watch Video' : 
-                         resource.type === 'audio' ? 'Listen' : 'Open Link'}
-                      </a>
-                    </Button>
-                  </div>
+          {resources.map((resource) => (
+            <div key={resource.id} className="flex items-start border-b pb-4 last:border-0">
+              <div className="p-2 bg-biophilic-sand/10 rounded-md mr-4">
+                <ResourceTypeIcon type={resource.type} />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-medium">{resource.title}</h4>
+                <p className="text-sm text-muted-foreground mb-2">{resource.description}</p>
+                <div className="flex items-center space-x-2">
+                  <Badge variant="outline" className="text-xs capitalize">
+                    {resource.type}
+                  </Badge>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-biophilic-earth hover:bg-biophilic-earth/10 hover:text-biophilic-earth p-0 h-auto text-xs flex items-center"
+                    onClick={() => handleResourceClick(resource)}
+                  >
+                    <Download className="h-3 w-3 mr-1" />
+                    Download
+                  </Button>
                 </div>
               </div>
-            ))
+            </div>
+          ))}
+          
+          {resources.length === 0 && (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>No resources available for this course.</p>
+            </div>
           )}
         </div>
       </CardContent>

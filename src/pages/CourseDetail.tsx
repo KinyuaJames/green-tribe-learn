@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -11,7 +12,8 @@ import { toast } from 'sonner';
 import VoiceRecorder from '@/components/VoiceRecorder';
 import Quiz from '@/components/Quiz';
 import ResourceVault from '@/components/ResourceVault';
-import { CheckCircle, Lock } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { CheckCircle, Lock, AlertTriangle } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 
 const CourseDetail = () => {
@@ -91,9 +93,14 @@ const CourseDetail = () => {
   // Safe check if user is enrolled - prevents errors when currentUser is null
   const isEnrolled = currentUser ? currentUser.enrolledCourses.includes(course.id) : false;
   
-  const handleLessonClick = (lessonId: string) => {
+  const handleLessonClick = (lessonId: string, isLocked: boolean | undefined) => {
     if (!isEnrolled) {
       toast.error('Please enroll in the course to access lessons');
+      return;
+    }
+    
+    if (isLocked) {
+      toast.error('This lesson is locked. Complete previous lessons to unlock it.');
       return;
     }
     
@@ -117,6 +124,9 @@ const CourseDetail = () => {
       toast.error(`You didn't pass the quiz. Keep learning and try again!`);
     }
   };
+  
+  // Check if this is a paid course that requires payment to access
+  const isPaidAndLocked = !course.isFree && course.isLocked;
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -170,6 +180,10 @@ const CourseDetail = () => {
                   <div className="text-2xl font-bold text-biophilic-clay">
                     {course.isFree ? 'FREE' : `KES ${course.price}`}
                   </div>
+                  
+                  {isPaidAndLocked && !isEnrolled && (
+                    <Badge className="bg-yellow-500 text-white">Payment Required</Badge>
+                  )}
                 </div>
                 
                 <div className="space-y-4">
@@ -179,6 +193,14 @@ const CourseDetail = () => {
                         Continue Learning
                       </Button>
                     </Link>
+                  ) : isPaidAndLocked ? (
+                    <Alert variant="warning" className="mb-4">
+                      <AlertTriangle className="h-4 w-4 mr-2" />
+                      <AlertTitle>Payment Features Coming Soon</AlertTitle>
+                      <AlertDescription>
+                        This is a premium course that will be available for purchase soon.
+                      </AlertDescription>
+                    </Alert>
                   ) : (
                     <Button 
                       onClick={handleEnroll} 
@@ -232,9 +254,14 @@ const CourseDetail = () => {
                   {course.modules.map((module, index) => (
                     <div key={module.id} className="border rounded-md overflow-hidden">
                       <div className="bg-muted p-4 flex justify-between items-center">
-                        <h3 className="font-medium">
-                          Module {index + 1}: {module.title}
-                        </h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-medium">
+                            Module {index + 1}: {module.title}
+                          </h3>
+                          {module.isLocked && (
+                            <Lock className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </div>
                         <span className="text-sm text-muted-foreground">
                           {module.lessons.length} lessons
                         </span>
@@ -251,6 +278,9 @@ const CourseDetail = () => {
                                 {isCompleted && (
                                   <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
                                 )}
+                                {lesson.isLocked && (
+                                  <Lock className="h-5 w-5 text-muted-foreground mr-2" />
+                                )}
                                 <div>
                                   <p className="font-medium">{lesson.title}</p>
                                   <p className="text-sm text-muted-foreground">
@@ -263,10 +293,12 @@ const CourseDetail = () => {
                               {isEnrolled ? (
                                 <Button 
                                   size="sm" 
-                                  variant="outline"
-                                  onClick={() => handleLessonClick(lesson.id)}
+                                  variant={lesson.isLocked ? "outline" : "outline"}
+                                  onClick={() => handleLessonClick(lesson.id, lesson.isLocked)}
+                                  disabled={isPaidAndLocked}
+                                  className={lesson.isLocked ? "text-muted-foreground" : ""}
                                 >
-                                  {isCompleted ? "Review" : "Start"}
+                                  {isCompleted ? "Review" : lesson.isLocked ? "Locked" : "Start"}
                                 </Button>
                               ) : (
                                 <div className="flex items-center text-muted-foreground">
@@ -408,6 +440,7 @@ const CourseDetail = () => {
                         <VoiceRecorder 
                           onRecordingComplete={handleVoiceSubmission} 
                           maxDuration={180}
+                          showSubmitButton={true}
                         />
                       </div>
                     )}
