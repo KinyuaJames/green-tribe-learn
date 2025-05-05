@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -9,14 +9,25 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { enrollUserInCourse, getCourseById } from '@/utils/database';
 import { toast } from 'sonner';
+import VoiceRecorder from '@/components/VoiceRecorder';
 
 const CourseDetail = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const [isEnrolling, setIsEnrolling] = useState(false);
+  const [selectedLesson, setSelectedLesson] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
   
   const course = getCourseById(courseId || '');
+  
+  useEffect(() => {
+    // Calculate progress if the user is enrolled
+    if (currentUser && course && currentUser.enrolledCourses.includes(course.id)) {
+      // This is just a placeholder. In a real app, you'd track lesson completion
+      setProgress(Math.random() * 100);
+    }
+  }, [currentUser, course]);
   
   if (!course) {
     return (
@@ -63,6 +74,20 @@ const CourseDetail = () => {
 
   const isEnrolled = currentUser?.enrolledCourses.includes(course.id);
   
+  const handleLessonClick = (lessonId: string) => {
+    if (!isEnrolled) {
+      toast.error('Please enroll in the course to access lessons');
+      return;
+    }
+    
+    setSelectedLesson(lessonId);
+  };
+  
+  const handleVoiceSubmission = (audioBlob: Blob) => {
+    // In a real app, you'd upload this to your storage/database
+    toast.success('Voice note recorded successfully! It has been added to your study gallery.');
+  };
+  
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -89,6 +114,21 @@ const CourseDetail = () => {
                   <p className="text-biophilic-earth font-medium">{course.instructor}</p>
                 </div>
               </div>
+              
+              {isEnrolled && (
+                <div className="mt-6 bg-white rounded-lg p-4 border">
+                  <div className="flex justify-between items-center mb-2">
+                    <p className="font-medium">Your Progress</p>
+                    <p className="text-sm text-biophilic-earth">{Math.round(progress)}% Complete</p>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2.5">
+                    <div 
+                      className="bg-biophilic-earth h-2.5 rounded-full" 
+                      style={{ width: `${progress}%` }}
+                    ></div>
+                  </div>
+                </div>
+              )}
             </div>
             
             <div className="lg:col-span-1">
@@ -185,7 +225,11 @@ const CourseDetail = () => {
                             </div>
                             
                             {isEnrolled ? (
-                              <Button size="sm" variant="outline">
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => handleLessonClick(lesson.id)}
+                              >
                                 View
                               </Button>
                             ) : (
@@ -198,6 +242,98 @@ const CourseDetail = () => {
                   ))}
                 </div>
               </div>
+              
+              {/* Lesson Modal */}
+              {selectedLesson && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                  <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-auto">
+                    {(() => {
+                      let lesson;
+                      let moduleTitle = '';
+                      
+                      for (const module of course.modules) {
+                        const found = module.lessons.find(l => l.id === selectedLesson);
+                        if (found) {
+                          lesson = found;
+                          moduleTitle = module.title;
+                          break;
+                        }
+                      }
+                      
+                      if (!lesson) return null;
+                      
+                      return (
+                        <>
+                          <div className="p-4 border-b flex justify-between items-center">
+                            <div>
+                              <p className="text-sm text-muted-foreground">{moduleTitle}</p>
+                              <h3 className="font-medium">{lesson.title}</h3>
+                            </div>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => setSelectedLesson(null)}
+                            >
+                              ✕
+                            </Button>
+                          </div>
+                          
+                          <div className="p-6">
+                            {lesson.type === 'video' ? (
+                              <div className="aspect-video bg-muted flex items-center justify-center mb-6">
+                                <p>Video Placeholder</p>
+                              </div>
+                            ) : null}
+                            
+                            {lesson.content && (
+                              <div className="prose max-w-none mb-6">
+                                <p>{lesson.content}</p>
+                              </div>
+                            )}
+                            
+                            {(lesson.type === 'assignment' || lesson.type === 'quiz') && (
+                              <div className="mt-8">
+                                <h4 className="font-medium mb-4">Submit Your Response</h4>
+                                
+                                {lesson.type === 'assignment' && (
+                                  <VoiceRecorder 
+                                    onRecordingComplete={handleVoiceSubmission} 
+                                    maxDuration={180}
+                                  />
+                                )}
+                                
+                                {lesson.type === 'quiz' && (
+                                  <div className="bg-muted/30 p-4 rounded-lg">
+                                    <p className="mb-4">Quiz coming soon!</p>
+                                    <textarea
+                                      placeholder="Write your answer here..."
+                                      className="w-full px-3 py-2 border rounded-md"
+                                      rows={4}
+                                    ></textarea>
+                                    <Button className="mt-4 bg-biophilic-earth hover:bg-biophilic-earth/90">
+                                      Submit Answer
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div className="p-4 border-t flex justify-between">
+                            <Button variant="outline">Previous Lesson</Button>
+                            <Button variant="outline" onClick={() => setSelectedLesson(null)}>
+                              Close
+                            </Button>
+                            <Button className="bg-biophilic-earth hover:bg-biophilic-earth/90">
+                              Next Lesson
+                            </Button>
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </div>
+                </div>
+              )}
             </TabsContent>
             
             <TabsContent value="overview">

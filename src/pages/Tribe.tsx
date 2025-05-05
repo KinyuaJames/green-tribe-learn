@@ -1,12 +1,79 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
+import Discussion from '@/components/Discussion';
+import { 
+  DiscussionPost,
+  getDiscussionPosts, 
+  createDiscussionPost, 
+  addReplyToPost, 
+  likePost 
+} from '@/utils/discussionUtils';
+import { toast } from 'sonner';
 
 const Tribe = () => {
+  const { currentUser } = useAuth();
+  const [posts, setPosts] = useState<DiscussionPost[]>([]);
+  
+  useEffect(() => {
+    // Load the posts when the component mounts
+    setPosts(getDiscussionPosts());
+  }, []);
+  
+  const handleNewPost = (content: string) => {
+    if (!currentUser) {
+      toast.error('Please log in to post');
+      return;
+    }
+    
+    try {
+      const newPost = createDiscussionPost(currentUser.id, content);
+      setPosts(prevPosts => [...prevPosts, newPost]);
+      toast.success('Post created successfully!');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to create post');
+    }
+  };
+  
+  const handleNewReply = (postId: string, content: string) => {
+    if (!currentUser) {
+      toast.error('Please log in to reply');
+      return;
+    }
+    
+    try {
+      const reply = addReplyToPost(postId, currentUser.id, content);
+      if (reply) {
+        // Refresh the posts
+        setPosts(getDiscussionPosts());
+        toast.success('Reply added successfully!');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to add reply');
+    }
+  };
+  
+  const handleLike = (postId: string) => {
+    if (!currentUser) {
+      toast.error('Please log in to like posts');
+      return;
+    }
+    
+    try {
+      const success = likePost(postId);
+      if (success) {
+        // Refresh the posts
+        setPosts(getDiscussionPosts());
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to like post');
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -28,35 +95,12 @@ const Tribe = () => {
                   <CardTitle className="text-biophilic-earth">Community Feed</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-foreground/70 mb-4">
-                    This is where our community discussions will appear. Join us to participate in the conversation!
-                  </p>
-                  
-                  <div className="bg-muted/50 border border-biophilic-sand/30 rounded-md p-8 text-center">
-                    <p className="text-lg text-biophilic-earth mb-2">Coming Soon!</p>
-                    <p className="text-foreground/70">
-                      Our community forum is under development and will be available soon.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-biophilic-earth">Start a Discussion</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-foreground/70 mb-4">
-                    Share your thoughts, questions, or insights with the community.
-                  </p>
-                  <Textarea 
-                    placeholder="What's on your mind?" 
-                    className="mb-4"
-                    disabled
+                  <Discussion 
+                    posts={posts} 
+                    onNewPost={handleNewPost} 
+                    onNewReply={handleNewReply}
+                    onLike={handleLike}
                   />
-                  <Button className="bg-biophilic-earth hover:bg-biophilic-earth/90 text-white" disabled>
-                    Post Discussion
-                  </Button>
                 </CardContent>
               </Card>
             </div>
