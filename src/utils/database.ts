@@ -230,7 +230,7 @@ function getInitialCourses() {
         },
         {
           id: 'res-003',
-8 title: 'Traditional Architecture Catalog',
+          title: 'Traditional Architecture Catalog',
           description: 'Collection of indigenous architectural solutions from across Africa',
           type: 'pdf',
           url: '#',
