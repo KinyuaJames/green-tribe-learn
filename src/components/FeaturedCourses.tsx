@@ -8,6 +8,11 @@ import { Course, getCourses } from '@/utils/database';
 import { useAuth } from '@/contexts/AuthContext';
 
 const CourseCard = ({ course, isEnrolled }: { course: Course, isEnrolled: boolean }) => {
+  const { currentUser } = useAuth();
+  
+  // Show Free badge only for non-logged in users or users who haven't enrolled
+  const showFreeBadge = course.isFree && (!currentUser || !isEnrolled);
+  
   return (
     <Card className="overflow-hidden border-biophilic-sand hover:shadow-md transition-shadow">
       <div className="aspect-video overflow-hidden relative">
@@ -16,7 +21,7 @@ const CourseCard = ({ course, isEnrolled }: { course: Course, isEnrolled: boolea
           alt={course.title} 
           className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
         />
-        {course.isFree && (
+        {showFreeBadge && (
           <div className="absolute top-2 right-2">
             <Badge className="bg-green-500">Free</Badge>
           </div>
@@ -31,7 +36,7 @@ const CourseCard = ({ course, isEnrolled }: { course: Course, isEnrolled: boolea
       </CardContent>
       <CardFooter className="flex justify-between items-center">
         <span className="font-bold text-lg text-biophilic-clay">
-          {course.isFree ? 'FREE' : `KES ${course.price}`}
+          {showFreeBadge ? 'FREE' : (isEnrolled ? 'ENROLLED' : `KES ${course.price}`)}
         </span>
         <Link to={`/course/${course.id}`}>
           <Button className="bg-biophilic-earth hover:bg-biophilic-earth/90 text-white">

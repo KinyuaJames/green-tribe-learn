@@ -22,7 +22,23 @@ const Courses = () => {
 
   // Check if user is enrolled in a specific course
   const isEnrolled = (courseId: string) => {
-    return currentUser?.enrolledCourses.includes(courseId) || false;
+    return currentUser?.enrolledCourses?.includes(courseId) || false;
+  };
+
+  // Determine if free badge should be shown
+  const shouldShowFreeBadge = (course: Course) => {
+    return course.isFree && (!currentUser || !isEnrolled(course.id));
+  };
+
+  // Determine price display text
+  const getPriceDisplay = (course: Course) => {
+    if (isEnrolled(course.id)) {
+      return 'ENROLLED';
+    } else if (shouldShowFreeBadge(course)) {
+      return 'FREE';
+    } else {
+      return `KES ${course.price}`;
+    }
   };
 
   return (
@@ -53,7 +69,7 @@ const Courses = () => {
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-start">
                     <CardTitle className="text-xl text-biophilic-earth">{course.title}</CardTitle>
-                    {course.isFree && (
+                    {shouldShowFreeBadge(course) && (
                       <Badge className="bg-green-500">Free</Badge>
                     )}
                   </div>
@@ -71,7 +87,7 @@ const Courses = () => {
                 </CardContent>
                 <CardFooter className="flex justify-between items-center">
                   <span className="font-bold text-lg text-biophilic-clay">
-                    {course.isFree ? 'FREE' : `KES ${course.price}`}
+                    {getPriceDisplay(course)}
                   </span>
                   <Link to={`/course/${course.id}`}>
                     <Button className="bg-biophilic-earth hover:bg-biophilic-earth/90 text-white">
