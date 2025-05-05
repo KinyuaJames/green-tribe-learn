@@ -1,4 +1,3 @@
-
 // Type definitions for our data models
 export interface User {
   id: string;
@@ -519,9 +518,13 @@ export const markLessonAsCompleted = (userId: string, lessonId: string): boolean
   return true;
 };
 
-export const isLessonCompleted = (userId: string, lessonId: string): boolean => {
+export const isLessonCompleted = (userId: string | undefined, lessonId: string): boolean => {
+  // If userId is undefined or null, return false
+  if (!userId) return false;
+  
   const user = getUserById(userId);
-  return user?.completedLessons.includes(lessonId) || false;
+  // Check if user exists and has completedLessons property before using includes
+  return user?.completedLessons?.includes(lessonId) || false;
 };
 
 export const saveQuizAttempt = (userId: string, quizId: string, score: number, totalQuestions: number): boolean => {

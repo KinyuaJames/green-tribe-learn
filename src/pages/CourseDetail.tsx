@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -35,7 +34,7 @@ const CourseDetail = () => {
       course.modules.forEach(module => {
         module.lessons.forEach(lesson => {
           totalLessons++;
-          if (isLessonCompleted(currentUser.id, lesson.id)) {
+          if (currentUser && isLessonCompleted(currentUser.id, lesson.id)) {
             completedCount++;
           }
         });
@@ -89,7 +88,8 @@ const CourseDetail = () => {
     }
   };
 
-  const isEnrolled = currentUser?.enrolledCourses.includes(course.id);
+  // Safe check if user is enrolled - prevents errors when currentUser is null
+  const isEnrolled = currentUser ? currentUser.enrolledCourses.includes(course.id) : false;
   
   const handleLessonClick = (lessonId: string) => {
     if (!isEnrolled) {
@@ -242,6 +242,7 @@ const CourseDetail = () => {
                       
                       <div className="divide-y">
                         {module.lessons.map((lesson) => {
+                          // Safely check if lesson is completed - handles null currentUser
                           const isCompleted = currentUser ? isLessonCompleted(currentUser.id, lesson.id) : false;
                           
                           return (
