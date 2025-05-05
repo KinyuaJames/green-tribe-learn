@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -7,9 +7,24 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, FileText, Download, Video, Mic, Upload, MessageSquare } from 'lucide-react';
+import { CheckCircle, FileText, Download, Video, Mic, Upload, MessageSquare, Book } from 'lucide-react';
+import { getCourses, Course } from '@/utils/database';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Courses = () => {
+  const { currentUser } = useAuth();
+  const [courses, setCourses] = useState<Course[]>([]);
+  
+  useEffect(() => {
+    const allCourses = getCourses();
+    setCourses(allCourses);
+  }, []);
+
+  // Check if user is enrolled in a specific course
+  const isEnrolled = (courseId: string) => {
+    return currentUser?.enrolledCourses.includes(courseId) || false;
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -25,6 +40,49 @@ const Courses = () => {
             </p>
           </div>
           
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+            {courses.map(course => (
+              <Card key={course.id} className="overflow-hidden flex flex-col">
+                <div className="aspect-video">
+                  <img 
+                    src={course.image} 
+                    alt={course.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <CardHeader className="pb-2">
+                  <div className="flex justify-between items-start">
+                    <CardTitle className="text-xl text-biophilic-earth">{course.title}</CardTitle>
+                    {course.isFree && (
+                      <Badge className="bg-green-500">Free</Badge>
+                    )}
+                  </div>
+                  <CardDescription>By {course.instructor} • {course.duration}</CardDescription>
+                </CardHeader>
+                <CardContent className="pb-4 flex-grow">
+                  <p className="text-foreground/80 line-clamp-3">{course.description}</p>
+                  <div className="mt-4 flex flex-wrap gap-1">
+                    {course.tags?.map(tag => (
+                      <Badge key={tag} variant="outline" className="bg-biophilic-sand/10">
+                        #{tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+                <CardFooter className="flex justify-between items-center">
+                  <span className="font-bold text-lg text-biophilic-clay">
+                    {course.isFree ? 'FREE' : `KES ${course.price}`}
+                  </span>
+                  <Link to={`/course/${course.id}`}>
+                    <Button className="bg-biophilic-earth hover:bg-biophilic-earth/90 text-white">
+                      {isEnrolled(course.id) ? 'View Course' : 'Enroll Now'}
+                    </Button>
+                  </Link>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Course Sidebar */}
             <div className="lg:col-span-1">
@@ -58,9 +116,11 @@ const Courses = () => {
                       <span className="text-sm text-muted-foreground">≈ $10 USD</span>
                     </div>
                     
-                    <Button className="w-full bg-biophilic-earth hover:bg-biophilic-earth/90">
-                      Enroll Now
-                    </Button>
+                    <Link to="/course/1">
+                      <Button className="w-full bg-biophilic-earth hover:bg-biophilic-earth/90">
+                        {isEnrolled('1') ? 'Continue Learning' : 'Enroll Now'}
+                      </Button>
+                    </Link>
                   </div>
                 </CardContent>
                 <CardFooter className="border-t pt-4 text-sm text-muted-foreground">
@@ -282,9 +342,9 @@ const Courses = () => {
               
               {/* CTA */}
               <div className="mt-8 flex justify-center">
-                <Link to="/signup">
+                <Link to={isEnrolled('1') ? "/course/1" : "/signup"}>
                   <Button size="lg" className="bg-biophilic-earth hover:bg-biophilic-earth/90 px-8">
-                    Enroll in this Course
+                    {isEnrolled('1') ? 'Continue Learning' : 'Enroll in this Course'}
                   </Button>
                 </Link>
               </div>

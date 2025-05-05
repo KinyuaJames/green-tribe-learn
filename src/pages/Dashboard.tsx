@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -7,9 +8,12 @@ import { getUserEnrolledCourses, Course } from '@/utils/database';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Book, User, Image } from 'lucide-react';
+import { Book, User, Image, Award, Gift } from 'lucide-react';
 import StudyGallery from '@/components/StudyGallery';
 import VoiceRecorder from '@/components/VoiceRecorder';
+import Certificate from '@/components/Certificate';
+import Achievements from '@/components/Achievements';
+import ResourceVault from '@/components/ResourceVault';
 import { toast } from 'sonner';
 
 // Study gallery item type
@@ -104,6 +108,17 @@ const Dashboard = () => {
     saveStudyItems(currentUser.id, updatedItems);
   };
 
+  // Get all resources from enrolled courses
+  const getAllResources = () => {
+    const resources = [];
+    for (const course of enrolledCourses) {
+      if (course.resources) {
+        resources.push(...course.resources);
+      }
+    }
+    return resources;
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -122,6 +137,12 @@ const Dashboard = () => {
               </TabsTrigger>
               <TabsTrigger value="gallery" className="flex items-center gap-2">
                 <Image className="h-4 w-4" /> Study Gallery
+              </TabsTrigger>
+              <TabsTrigger value="achievements" className="flex items-center gap-2">
+                <Award className="h-4 w-4" /> Achievements
+              </TabsTrigger>
+              <TabsTrigger value="resources" className="flex items-center gap-2">
+                <Gift className="h-4 w-4" /> Resource Vault
               </TabsTrigger>
               <TabsTrigger value="profile" className="flex items-center gap-2">
                 <User className="h-4 w-4" /> My Profile
@@ -163,8 +184,9 @@ const Dashboard = () => {
                               </p>
                               <div className="mt-4 flex justify-between items-center">
                                 <div>
-                                  {/* You can add progress info here */}
-                                  <span className="text-sm text-muted-foreground">0% Complete</span>
+                                  <span className="text-sm text-muted-foreground">
+                                    {course.isFree ? 'Free Course' : `KES ${course.price}`}
+                                  </span>
                                 </div>
                                 <Link to={`/course/${course.id}`}>
                                   <Button className="bg-biophilic-earth hover:bg-biophilic-earth/90">
@@ -262,6 +284,43 @@ const Dashboard = () => {
                 </div>
               </div>
             </TabsContent>
+
+            <TabsContent value="achievements">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="md:col-span-2">
+                  {currentUser?.badges && (
+                    <Achievements badges={currentUser.badges} />
+                  )}
+                </div>
+                
+                <div>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-biophilic-earth">Your Certificates</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      {currentUser?.certificates && currentUser.certificates.length > 0 ? (
+                        currentUser.certificates.map(certificate => (
+                          <Certificate
+                            key={certificate.id}
+                            certificate={certificate}
+                            userName={currentUser.fullName}
+                          />
+                        ))
+                      ) : (
+                        <div className="text-center py-8">
+                          <p className="text-muted-foreground">Complete courses to earn certificates!</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="resources">
+              <ResourceVault resources={getAllResources()} />
+            </TabsContent>
             
             <TabsContent value="profile">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -320,6 +379,20 @@ const Dashboard = () => {
                         <label className="block text-sm font-medium text-muted-foreground">Voice Recordings</label>
                         <p className="mt-1 text-foreground text-2xl font-bold">
                           {studyItems.filter(item => item.type === 'voice').length}
+                        </p>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-muted-foreground">Earned Badges</label>
+                        <p className="mt-1 text-foreground text-2xl font-bold">
+                          {currentUser?.badges?.length || 0}
+                        </p>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-muted-foreground">Certificates</label>
+                        <p className="mt-1 text-foreground text-2xl font-bold">
+                          {currentUser?.certificates?.length || 0}
                         </p>
                       </div>
                     </div>

@@ -7,9 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
-import { enrollUserInCourse, getCourseById } from '@/utils/database';
+import { enrollUserInCourse, getCourseById, isLessonCompleted, markLessonAsCompleted } from '@/utils/database';
 import { toast } from 'sonner';
 import VoiceRecorder from '@/components/VoiceRecorder';
+import Quiz from '@/components/Quiz';
+import ResourceVault from '@/components/ResourceVault';
+import { CheckCircle, Lock } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
 
 const CourseDetail = () => {
   const { courseId } = useParams();
@@ -24,10 +28,23 @@ const CourseDetail = () => {
   useEffect(() => {
     // Calculate progress if the user is enrolled
     if (currentUser && course && currentUser.enrolledCourses.includes(course.id)) {
-      // This is just a placeholder. In a real app, you'd track lesson completion
-      setProgress(Math.random() * 100);
+      // Count completed lessons
+      let totalLessons = 0;
+      let completedCount = 0;
+      
+      course.modules.forEach(module => {
+        module.lessons.forEach(lesson => {
+          totalLessons++;
+          if (isLessonCompleted(currentUser.id, lesson.id)) {
+            completedCount++;
+          }
+        });
+      });
+      
+      const calculatedProgress = totalLessons > 0 ? (completedCount / totalLessons) * 100 : 0;
+      setProgress(calculatedProgress);
     }
-  }, [currentUser, course]);
+  }, [currentUser, course, selectedLesson]);
   
   if (!course) {
     return (
@@ -81,11 +98,24 @@ const CourseDetail = () => {
     }
     
     setSelectedLesson(lessonId);
+    
+    // Mark lesson as completed when user views it
+    if (currentUser) {
+      markLessonAsCompleted(currentUser.id, lessonId);
+    }
   };
   
   const handleVoiceSubmission = (audioBlob: Blob) => {
     // In a real app, you'd upload this to your storage/database
     toast.success('Voice note recorded successfully! It has been added to your study gallery.');
+  };
+
+  const handleQuizComplete = (score: number, passed: boolean) => {
+    if (passed) {
+      toast.success(`Congratulations! You passed the quiz with a score of ${score}!`);
+    } else {
+      toast.error(`You didn't pass the quiz. Keep learning and try again!`);
+    }
   };
   
   return (
@@ -121,12 +151,7 @@ const CourseDetail = () => {
                     <p className="font-medium">Your Progress</p>
                     <p className="text-sm text-biophilic-earth">{Math.round(progress)}% Complete</p>
                   </div>
-                  <div className="w-full bg-muted rounded-full h-2.5">
-                    <div 
-                      className="bg-biophilic-earth h-2.5 rounded-full" 
-                      style={{ width: `${progress}%` }}
-                    ></div>
-                  </div>
+                  <Progress value={progress} className="h-2.5 bg-muted" />
                 </div>
               )}
             </div>
@@ -142,7 +167,9 @@ const CourseDetail = () => {
                 </div>
                 
                 <div className="flex justify-between items-center mb-6">
-                  <div className="text-2xl font-bold text-biophilic-clay">KES {course.price}</div>
+                  <div className="text-2xl font-bold text-biophilic-clay">
+                    {course.isFree ? 'FREE' : `KES ${course.price}`}
+                  </div>
                 </div>
                 
                 <div className="space-y-4">
@@ -158,7 +185,7 @@ const CourseDetail = () => {
                       disabled={isEnrolling}
                       className="w-full bg-biophilic-earth hover:bg-biophilic-earth/90"
                     >
-                      {isEnrolling ? 'Processing...' : 'Enroll Now'}
+                      {isEnrolling ? 'Processing...' : course.isFree ? 'Enroll for Free' : 'Enroll Now'}
                     </Button>
                   )}
                 </div>
@@ -192,7 +219,7 @@ const CourseDetail = () => {
           <Tabs defaultValue="curriculum">
             <TabsList className="mb-8">
               <TabsTrigger value="curriculum">Curriculum</TabsTrigger>
-              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="resources">Resources</TabsTrigger>
               <TabsTrigger value="instructor">Instructor</TabsTrigger>
               <TabsTrigger value="reviews">Reviews</TabsTrigger>
             </TabsList>
@@ -214,147 +241,56 @@ const CourseDetail = () => {
                       </div>
                       
                       <div className="divide-y">
-                        {module.lessons.map((lesson) => (
-                          <div key={lesson.id} className="p-4 flex justify-between items-center">
-                            <div>
-                              <p className="font-medium">{lesson.title}</p>
-                              <p className="text-sm text-muted-foreground">
-                                {lesson.type.charAt(0).toUpperCase() + lesson.type.slice(1)}
-                                {lesson.duration && ` • ${lesson.duration}`}
-                              </p>
+                        {module.lessons.map((lesson) => {
+                          const isCompleted = currentUser ? isLessonCompleted(currentUser.id, lesson.id) : false;
+                          
+                          return (
+                            <div key={lesson.id} className="p-4 flex justify-between items-center">
+                              <div className="flex items-center">
+                                {isCompleted && (
+                                  <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
+                                )}
+                                <div>
+                                  <p className="font-medium">{lesson.title}</p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {lesson.type.charAt(0).toUpperCase() + lesson.type.slice(1)}
+                                    {lesson.duration && ` • ${lesson.duration}`}
+                                  </p>
+                                </div>
+                              </div>
+                              
+                              {isEnrolled ? (
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => handleLessonClick(lesson.id)}
+                                >
+                                  {isCompleted ? "Review" : "Start"}
+                                </Button>
+                              ) : (
+                                <div className="flex items-center text-muted-foreground">
+                                  <Lock className="h-4 w-4 mr-1" />
+                                  <span className="text-sm">Locked</span>
+                                </div>
+                              )}
                             </div>
-                            
-                            {isEnrolled ? (
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                onClick={() => handleLessonClick(lesson.id)}
-                              >
-                                View
-                              </Button>
-                            ) : (
-                              <span className="text-sm text-muted-foreground">Locked</span>
-                            )}
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
-              
-              {/* Lesson Modal */}
-              {selectedLesson && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                  <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-auto">
-                    {(() => {
-                      let lesson;
-                      let moduleTitle = '';
-                      
-                      for (const module of course.modules) {
-                        const found = module.lessons.find(l => l.id === selectedLesson);
-                        if (found) {
-                          lesson = found;
-                          moduleTitle = module.title;
-                          break;
-                        }
-                      }
-                      
-                      if (!lesson) return null;
-                      
-                      return (
-                        <>
-                          <div className="p-4 border-b flex justify-between items-center">
-                            <div>
-                              <p className="text-sm text-muted-foreground">{moduleTitle}</p>
-                              <h3 className="font-medium">{lesson.title}</h3>
-                            </div>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              onClick={() => setSelectedLesson(null)}
-                            >
-                              ✕
-                            </Button>
-                          </div>
-                          
-                          <div className="p-6">
-                            {lesson.type === 'video' ? (
-                              <div className="aspect-video bg-muted flex items-center justify-center mb-6">
-                                <p>Video Placeholder</p>
-                              </div>
-                            ) : null}
-                            
-                            {lesson.content && (
-                              <div className="prose max-w-none mb-6">
-                                <p>{lesson.content}</p>
-                              </div>
-                            )}
-                            
-                            {(lesson.type === 'assignment' || lesson.type === 'quiz') && (
-                              <div className="mt-8">
-                                <h4 className="font-medium mb-4">Submit Your Response</h4>
-                                
-                                {lesson.type === 'assignment' && (
-                                  <VoiceRecorder 
-                                    onRecordingComplete={handleVoiceSubmission} 
-                                    maxDuration={180}
-                                  />
-                                )}
-                                
-                                {lesson.type === 'quiz' && (
-                                  <div className="bg-muted/30 p-4 rounded-lg">
-                                    <p className="mb-4">Quiz coming soon!</p>
-                                    <textarea
-                                      placeholder="Write your answer here..."
-                                      className="w-full px-3 py-2 border rounded-md"
-                                      rows={4}
-                                    ></textarea>
-                                    <Button className="mt-4 bg-biophilic-earth hover:bg-biophilic-earth/90">
-                                      Submit Answer
-                                    </Button>
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                          
-                          <div className="p-4 border-t flex justify-between">
-                            <Button variant="outline">Previous Lesson</Button>
-                            <Button variant="outline" onClick={() => setSelectedLesson(null)}>
-                              Close
-                            </Button>
-                            <Button className="bg-biophilic-earth hover:bg-biophilic-earth/90">
-                              Next Lesson
-                            </Button>
-                          </div>
-                        </>
-                      );
-                    })()}
-                  </div>
-                </div>
-              )}
             </TabsContent>
             
-            <TabsContent value="overview">
-              <div className="bg-white rounded-lg shadow-sm border border-border p-6">
-                <h2 className="text-2xl font-semibold text-biophilic-earth mb-6">Course Overview</h2>
-                <p className="text-foreground/80">{course.description}</p>
-                
-                {/* Tags */}
-                {course.tags && course.tags.length > 0 && (
-                  <div className="mt-8">
-                    <h3 className="text-lg font-medium mb-2">Tags</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {course.tags.map(tag => (
-                        <span key={tag} className="bg-biophilic-sand/20 px-3 py-1 rounded-full text-sm">
-                          #{tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+            <TabsContent value="resources">
+              {course.resources ? (
+                <ResourceVault resources={course.resources} />
+              ) : (
+                <div className="bg-white rounded-lg shadow-sm border border-border p-6 text-center">
+                  <p className="text-muted-foreground">No resources available for this course.</p>
+                </div>
+              )}
             </TabsContent>
             
             <TabsContent value="instructor">
@@ -407,6 +343,90 @@ const CourseDetail = () => {
           </Tabs>
         </div>
       </main>
+      
+      {/* Lesson Modal */}
+      {selectedLesson && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-auto">
+            {(() => {
+              let lesson;
+              let moduleTitle = '';
+              
+              for (const module of course.modules) {
+                const found = module.lessons.find(l => l.id === selectedLesson);
+                if (found) {
+                  lesson = found;
+                  moduleTitle = module.title;
+                  break;
+                }
+              }
+              
+              if (!lesson) return null;
+              
+              return (
+                <>
+                  <div className="p-4 border-b flex justify-between items-center">
+                    <div>
+                      <p className="text-sm text-muted-foreground">{moduleTitle}</p>
+                      <h3 className="font-medium">{lesson.title}</h3>
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setSelectedLesson(null)}
+                    >
+                      ✕
+                    </Button>
+                  </div>
+                  
+                  <div className="p-6">
+                    {lesson.type === 'video' ? (
+                      <div className="aspect-video bg-muted flex items-center justify-center mb-6">
+                        <p>Video Placeholder</p>
+                      </div>
+                    ) : null}
+                    
+                    {lesson.content && lesson.type !== 'quiz' && (
+                      <div className="prose max-w-none mb-6">
+                        <p>{lesson.content}</p>
+                      </div>
+                    )}
+                    
+                    {lesson.type === 'quiz' && lesson.quiz && currentUser && (
+                      <Quiz 
+                        quiz={lesson.quiz} 
+                        courseId={course.id}
+                        onComplete={handleQuizComplete}
+                      />
+                    )}
+                    
+                    {lesson.type === 'assignment' && (
+                      <div className="mt-8">
+                        <h4 className="font-medium mb-4">Submit Your Response</h4>
+                        
+                        <VoiceRecorder 
+                          onRecordingComplete={handleVoiceSubmission} 
+                          maxDuration={180}
+                        />
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="p-4 border-t flex justify-between">
+                    <Button variant="outline">Previous Lesson</Button>
+                    <Button variant="outline" onClick={() => setSelectedLesson(null)}>
+                      Close
+                    </Button>
+                    <Button className="bg-biophilic-earth hover:bg-biophilic-earth/90">
+                      Next Lesson
+                    </Button>
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+        </div>
+      )}
       
       <Footer />
     </div>

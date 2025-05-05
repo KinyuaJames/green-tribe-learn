@@ -3,17 +3,24 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Course, getCourses } from '@/utils/database';
+import { useAuth } from '@/contexts/AuthContext';
 
-const CourseCard = ({ course }: { course: Course }) => {
+const CourseCard = ({ course, isEnrolled }: { course: Course, isEnrolled: boolean }) => {
   return (
     <Card className="overflow-hidden border-biophilic-sand hover:shadow-md transition-shadow">
-      <div className="aspect-video overflow-hidden">
+      <div className="aspect-video overflow-hidden relative">
         <img 
           src={course.image} 
           alt={course.title} 
           className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
         />
+        {course.isFree && (
+          <div className="absolute top-2 right-2">
+            <Badge className="bg-green-500">Free</Badge>
+          </div>
+        )}
       </div>
       <CardHeader className="pb-2">
         <h3 className="text-xl font-semibold text-biophilic-earth">{course.title}</h3>
@@ -23,10 +30,12 @@ const CourseCard = ({ course }: { course: Course }) => {
         <p className="text-foreground/80 line-clamp-3">{course.description}</p>
       </CardContent>
       <CardFooter className="flex justify-between items-center">
-        <span className="font-bold text-lg text-biophilic-clay">KES {course.price}</span>
+        <span className="font-bold text-lg text-biophilic-clay">
+          {course.isFree ? 'FREE' : `KES ${course.price}`}
+        </span>
         <Link to={`/course/${course.id}`}>
           <Button className="bg-biophilic-earth hover:bg-biophilic-earth/90 text-white">
-            View Course
+            {isEnrolled ? 'View Course' : 'Enroll Now'}
           </Button>
         </Link>
       </CardFooter>
@@ -36,11 +45,19 @@ const CourseCard = ({ course }: { course: Course }) => {
 
 const FeaturedCourses = () => {
   const [courses, setCourses] = useState<Course[]>([]);
+  const { currentUser } = useAuth();
   
   useEffect(() => {
     const allCourses = getCourses();
-    setCourses(allCourses);
+    // Filter to show only featured courses
+    const featuredCourses = allCourses.filter(course => course.isFeatured);
+    setCourses(featuredCourses);
   }, []);
+
+  // Check if user is enrolled in a specific course
+  const isEnrolled = (courseId: string) => {
+    return currentUser?.enrolledCourses?.includes(courseId) || false;
+  };
 
   return (
     <section className="py-16 bg-biophilic-sand/10">
@@ -54,14 +71,20 @@ const FeaturedCourses = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {courses.map((course) => (
-            <CourseCard key={course.id} course={course} />
+            <CourseCard 
+              key={course.id} 
+              course={course} 
+              isEnrolled={isEnrolled(course.id)}
+            />
           ))}
           
           {/* Coming soon placeholders */}
-          <Card className="overflow-hidden border-biophilic-sand bg-muted/50 flex flex-col justify-center items-center p-8 h-full">
-            <h3 className="text-xl font-semibold text-biophilic-earth mb-2">More Courses Coming Soon</h3>
-            <p className="text-center text-foreground/70 mb-4">Stay tuned for additional courses on biophilic design and sustainable living.</p>
-          </Card>
+          {courses.length < 3 && (
+            <Card className="overflow-hidden border-biophilic-sand bg-muted/50 flex flex-col justify-center items-center p-8 h-full">
+              <h3 className="text-xl font-semibold text-biophilic-earth mb-2">More Courses Coming Soon</h3>
+              <p className="text-center text-foreground/70 mb-4">Stay tuned for additional courses on biophilic design and sustainable living.</p>
+            </Card>
+          )}
         </div>
         
         <div className="text-center mt-12">
