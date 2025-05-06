@@ -1,20 +1,40 @@
-
 // This file simulates a database with mock data
 // In a real application, this would be replaced with actual API calls to a backend
 
 import { toast } from 'sonner';
+
+export interface Badge {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  earnedDate: string;
+}
+
+export interface Certificate {
+  id: string;
+  courseId: string;
+  courseName: string;
+  issueDate: string;
+  completionDate: string;
+  certificateUrl: string;
+}
 
 export interface User {
   id: string;
   email: string;
   password: string;
   name?: string;
+  fullName?: string;
   avatar?: string;
   enrolledCourses: string[];
   completedLessons: string[];
   quizAttempts: QuizAttempt[];
   studyGallery: StudyItem[];
   role: 'student' | 'instructor' | 'admin';
+  badges: Badge[];
+  certificates: Certificate[];
+  createdAt?: string;
 }
 
 export interface Course {
@@ -154,29 +174,38 @@ const users: User[] = [
     email: 'user@example.com',
     password: 'password123',
     name: 'Demo User',
+    fullName: 'Demo User',
     enrolledCourses: ['1'],
     completedLessons: [],
     quizAttempts: [],
     studyGallery: [],
-    role: 'student'
+    role: 'student',
+    badges: [],
+    certificates: [],
+    createdAt: new Date().toISOString()
   },
   {
     id: '2',
     email: 'instructor@biophilic.edu',
     password: 'password123',
     name: 'Jane Instructor',
+    fullName: 'Jane Instructor',
     avatar: 'https://i.pravatar.cc/150?img=48',
     enrolledCourses: [],
     completedLessons: [],
     quizAttempts: [],
     studyGallery: [],
-    role: 'instructor'
+    role: 'instructor',
+    badges: [],
+    certificates: [],
+    createdAt: new Date().toISOString()
   },
   {
     id: '3',
     email: 'demo@biophilic.edu',
     password: 'password123',
     name: 'Demo Student',
+    fullName: 'Demo Student',
     enrolledCourses: ['1', '2'],
     completedLessons: [
       'lesson-1-1', 'lesson-1-2', 'lesson-1-3', 
@@ -238,6 +267,25 @@ const users: User[] = [
         type: 'note',
         content: 'Ideas for my own garden: 1. Use local plants to attract native birds, 2. Create a small water feature, 3. Use natural materials like wood and stone for boundaries.',
         createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+      }
+    ],
+    badges: [
+      {
+        id: 'badge-1',
+        title: 'Biophilia Explorer',
+        description: 'Completed the Fundamentals course',
+        imageUrl: '/badges/explorer.svg',
+        earnedDate: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
+      }
+    ],
+    certificates: [
+      {
+        id: 'cert-1',
+        courseId: '1',
+        courseName: 'Biophilic Design Fundamentals',
+        issueDate: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
+        completionDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+        certificateUrl: '/certificates/biophilic-fundamentals.pdf'
       }
     ],
     role: 'student'
@@ -668,34 +716,45 @@ const discussionThreads: DiscussionThread[] = [
   }
 ];
 
+// Initialize the database
+export const initializeDatabase = () => {
+  // This would typically connect to a real database
+  console.log('Database initialized');
+  return true;
+};
+
 // Authentication Functions
-export const loginUser = (email: string, password: string) => {
+export const authenticateUser = (email: string, password: string) => {
   const user = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
   if (user) {
     // Create a copy without the password
-    const { password, ...userWithoutPassword } = user;
+    const { password: _, ...userWithoutPassword } = user;
     return { ...userWithoutPassword };
   }
   return null;
 };
 
-export const signupUser = (email: string, password: string, name?: string) => {
+export const createUser = (userData: Partial<User>) => {
   // Check if user already exists
-  if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
-    return null;
+  if (users.find(u => u.email.toLowerCase() === userData.email?.toLowerCase())) {
+    throw new Error('Email already in use');
   }
   
-  // Create new user
+  // Create new user with required fields
   const newUser: User = {
     id: generateId(),
-    email,
-    password,
-    name,
-    enrolledCourses: [],
-    completedLessons: [],
-    quizAttempts: [],
-    studyGallery: [],
-    role: 'student'
+    email: userData.email || '',
+    password: userData.password || '',
+    fullName: userData.fullName,
+    name: userData.fullName, // For backward compatibility
+    enrolledCourses: userData.enrolledCourses || [],
+    completedLessons: userData.completedLessons || [],
+    quizAttempts: userData.quizAttempts || [],
+    studyGallery: userData.studyGallery || [],
+    badges: userData.badges || [],
+    certificates: userData.certificates || [],
+    role: userData.role || 'student',
+    createdAt: new Date().toISOString()
   };
   
   users.push(newUser);
@@ -703,6 +762,25 @@ export const signupUser = (email: string, password: string, name?: string) => {
   // Return user without password
   const { password: _, ...userWithoutPassword } = newUser;
   return { ...userWithoutPassword };
+};
+
+export const getUserById = (id: string) => {
+  const user = users.find(u => u.id === id);
+  if (user) {
+    // Create a copy without the password
+    const { password: _, ...userWithoutPassword } = user;
+    return { ...userWithoutPassword };
+  }
+  return null;
+};
+
+export const getUserEnrolledCourses = (userId: string) => {
+  const user = users.find(u => u.id === userId);
+  if (!user) return [];
+  
+  return user.enrolledCourses
+    .map(courseId => courses.find(c => c.id === courseId))
+    .filter(Boolean) as Course[];
 };
 
 // Course Functions
