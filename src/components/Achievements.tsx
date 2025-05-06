@@ -30,7 +30,7 @@ const Achievements: React.FC<AchievementsProps> = ({ badges }) => {
                   <h3 className="font-medium text-biophilic-earth">{badge.title}</h3>
                   <p className="text-sm text-muted-foreground">{badge.description}</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Earned on {format(new Date(badge.earnedDate || badge.dateEarned), 'MMM d, yyyy')}
+                    Earned on {format(new Date(badge.earnedDate || badge.dateEarned || ''), 'MMM d, yyyy')}
                   </p>
                 </div>
               </div>

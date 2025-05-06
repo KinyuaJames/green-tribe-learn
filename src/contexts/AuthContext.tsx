@@ -32,6 +32,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (userId) {
       const user = getUserById(userId);
       if (user) {
+        // The getUserById function already returns user without password
         setCurrentUser(user);
       } else {
         // Clear invalid user ID
@@ -46,6 +47,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const user = authenticateUser(email, password);
       if (user) {
+        // The authenticateUser function already returns user without password
         setCurrentUser(user);
         localStorage.setItem('currentUserId', user.id);
         toast.success('Login successful!');
@@ -71,12 +73,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         completedLessons: [],
         badges: [],
         certificates: [],
-        completedQuizzes: [],
         role: 'student',
         quizAttempts: [],
-        studyGallery: []
+        studyGallery: [],
+        completedQuizzes: []
       });
       
+      // The createUser function already returns user without password
       setCurrentUser(user);
       localStorage.setItem('currentUserId', user.id);
       toast.success('Account created successfully!');
