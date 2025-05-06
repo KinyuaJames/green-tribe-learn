@@ -24,13 +24,13 @@ const Achievements: React.FC<AchievementsProps> = ({ badges }) => {
             {badges.map((badge) => (
               <div key={badge.id} className="flex items-center p-4 border rounded-lg hover:bg-muted/50 transition-colors">
                 <div className="h-16 w-16 rounded-full overflow-hidden mr-4 border-2 border-biophilic-earth">
-                  <img src={badge.image || badge.imageUrl} alt={badge.title} className="w-full h-full object-cover" />
+                  <img src={badge.imageUrl || badge.image} alt={badge.title} className="w-full h-full object-cover" />
                 </div>
                 <div>
                   <h3 className="font-medium text-biophilic-earth">{badge.title}</h3>
                   <p className="text-sm text-muted-foreground">{badge.description}</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Earned on {format(new Date(badge.dateEarned || badge.earnedDate), 'MMM d, yyyy')}
+                    Earned on {format(new Date(badge.earnedDate || badge.dateEarned), 'MMM d, yyyy')}
                   </p>
                 </div>
               </div>

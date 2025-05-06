@@ -67,10 +67,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         fullName,
         email,
         password,
+        enrolledCourses: [],
         completedLessons: [],
         badges: [],
+        certificates: [],
         completedQuizzes: [],
-        certificates: []
+        role: 'student',
+        quizAttempts: [],
+        studyGallery: []
       });
       
       setCurrentUser(user);
