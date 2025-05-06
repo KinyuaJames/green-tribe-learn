@@ -28,7 +28,7 @@ const Certificate: React.FC<CertificateProps> = ({ certificate, userName }) => {
           <p className="text-lg">This is to certify that</p>
           <h3 className="text-3xl font-bold my-4 italic">{userName}</h3>
           <p className="text-lg mb-6">has successfully completed</p>
-          <h4 className="text-xl font-semibold mb-4">"{certificate.courseTitle}"</h4>
+          <h4 className="text-xl font-semibold mb-4">"{certificate.courseTitle || certificate.courseName}"</h4>
           <p className="text-sm mb-2">Issued on: {format(new Date(certificate.issueDate), 'MMMM d, yyyy')}</p>
         </div>
       </div>

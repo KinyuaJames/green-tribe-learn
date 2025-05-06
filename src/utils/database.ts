@@ -7,7 +7,9 @@ export interface Badge {
   id: string;
   title: string;
   description: string;
+  image: string;
   imageUrl: string;
+  dateEarned: string;
   earnedDate: string;
 }
 
@@ -15,6 +17,7 @@ export interface Certificate {
   id: string;
   courseId: string;
   courseName: string;
+  courseTitle: string;
   issueDate: string;
   completionDate: string;
   certificateUrl: string;
@@ -34,6 +37,7 @@ export interface User {
   role: 'student' | 'instructor' | 'admin';
   badges: Badge[];
   certificates: Certificate[];
+  completedQuizzes?: string[];
   createdAt?: string;
 }
 
@@ -184,6 +188,7 @@ const users: User[] = [
     role: 'student',
     badges: [],
     certificates: [],
+    completedQuizzes: [],
     createdAt: new Date().toISOString()
   },
   {
@@ -200,6 +205,7 @@ const users: User[] = [
     role: 'instructor',
     badges: [],
     certificates: [],
+    completedQuizzes: [],
     createdAt: new Date().toISOString()
   },
   {
@@ -277,7 +283,9 @@ const users: User[] = [
         title: 'Biophilia Explorer',
         description: 'Completed the Fundamentals course',
         imageUrl: '/badges/explorer.svg',
-        earnedDate: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
+        image: '/badges/explorer.svg',
+        earnedDate: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
+        dateEarned: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
       }
     ],
     certificates: [
@@ -285,11 +293,13 @@ const users: User[] = [
         id: 'cert-1',
         courseId: '1',
         courseName: 'Biophilic Design Fundamentals',
+        courseTitle: 'Biophilic Design Fundamentals',
         issueDate: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
         completionDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
         certificateUrl: '/certificates/biophilic-fundamentals.pdf'
       }
     ],
+    completedQuizzes: [],
     role: 'student'
   }
 ];
@@ -820,6 +830,7 @@ export const createUser = (userData: Partial<User>) => {
     studyGallery: userData.studyGallery || [],
     badges: userData.badges || [],
     certificates: userData.certificates || [],
+    completedQuizzes: userData.completedQuizzes || [],
     role: userData.role || 'student',
     createdAt: new Date().toISOString()
   };
@@ -1145,5 +1156,52 @@ export const addDiscussionMessage = (input: MessageInput) => {
   return message.id;
 };
 
-// Make sure to export authenticateUser and other functions from the file
+// Additional functions that were missing
+
+// Update user information
+export const updateUser = (userId: string, userData: Partial<User>): boolean => {
+  const userIndex = users.findIndex(u => u.id === userId);
+  if (userIndex === -1) return false;
+  
+  users[userIndex] = { ...users[userIndex], ...userData };
+  return true;
+};
+
+// Enroll a user in a course
+export const enrollCourse = (userId: string, courseId: string): boolean => {
+  const user = users.find(u => u.id === userId);
+  if (!user) return false;
+  
+  if (!user.enrolledCourses.includes(courseId)) {
+    user.enrolledCourses.push(courseId);
+  }
+  
+  return true;
+};
+
+// Mark a course as completed
+export const completeCourse = (userId: string, courseId: string): boolean => {
+  const user = users.find(u => u.id === userId);
+  if (!user) return false;
+  
+  // Here you might add courseId to a completedCourses array
+  // or issue a certificate
+  
+  return true;
+};
+
+// Mark a lesson as completed
+export const completeLesson = (userId: string, lessonId: string): boolean => {
+  const user = users.find(u => u.id === userId);
+  if (!user) return false;
+  
+  if (!user.completedLessons.includes(lessonId)) {
+    user.completedLessons.push(lessonId);
+  }
+  
+  return true;
+};
+
+// No need to re-export functions that are already exported above
+
 export { authenticateUser, createUser, updateUser, enrollCourse, completeCourse, completeLesson };

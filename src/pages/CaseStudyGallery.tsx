@@ -24,6 +24,8 @@ interface CaseStudy {
   featured: boolean;
   published: boolean;
   createdAt: string;
+  location: string;
+  year: number;
 }
 
 const CaseStudyGallery = () => {
@@ -32,6 +34,8 @@ const CaseStudyGallery = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [tags, setTags] = useState('');
+  const [location, setLocation] = useState('');
+  const [year, setYear] = useState<number>(new Date().getFullYear());
   const [selectedImages, setSelectedImages] = useState<FileList | null>(null);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -73,6 +77,11 @@ const CaseStudyGallery = () => {
       return;
     }
     
+    if (!location.trim()) {
+      toast.error('Please enter a location');
+      return;
+    }
+    
     if (!selectedImages || selectedImages.length === 0) {
       toast.error('Please select at least one image');
       return;
@@ -95,6 +104,8 @@ const CaseStudyGallery = () => {
       addCaseStudy({
         title,
         description,
+        location,
+        year,
         images: imageUrls,
         tags: tagsArray,
         authorId: currentUser.id,
@@ -107,6 +118,8 @@ const CaseStudyGallery = () => {
       setTitle('');
       setDescription('');
       setTags('');
+      setLocation('');
+      setYear(new Date().getFullYear());
       setSelectedImages(null);
       setPreviewUrls([]);
       
@@ -170,6 +183,34 @@ const CaseStudyGallery = () => {
                       rows={4}
                       required
                     />
+                  </div>
+                  
+                  <div className="flex gap-4">
+                    <div className="flex-1">
+                      <label htmlFor="location" className="block text-sm font-medium mb-1">
+                        Location
+                      </label>
+                      <Input
+                        id="location"
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
+                        placeholder="e.g., Nairobi, Kenya"
+                        required
+                      />
+                    </div>
+                    <div className="w-1/3">
+                      <label htmlFor="year" className="block text-sm font-medium mb-1">
+                        Year
+                      </label>
+                      <Input
+                        id="year"
+                        type="number"
+                        value={year}
+                        onChange={(e) => setYear(parseInt(e.target.value))}
+                        placeholder={new Date().getFullYear().toString()}
+                        required
+                      />
+                    </div>
                   </div>
                   
                   <div>
@@ -249,6 +290,12 @@ const CaseStudyGallery = () => {
                     <p className="text-sm text-muted-foreground line-clamp-2">
                       {study.description}
                     </p>
+                    
+                    <div className="flex items-center mt-2 text-sm text-muted-foreground">
+                      <span>{study.location}</span>
+                      <span className="mx-2">•</span>
+                      <span>{study.year}</span>
+                    </div>
                     
                     <div className="flex flex-wrap gap-1 mt-3">
                       {study.tags.slice(0, 3).map((tag, index) => (
