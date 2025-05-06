@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -12,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { getCaseStudies, addCaseStudy } from '@/utils/database';
+import type { CaseStudy } from '@/utils/database/types';
 
 interface CaseStudy {
   id: string;

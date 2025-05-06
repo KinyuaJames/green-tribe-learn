@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -18,6 +17,7 @@ import {
   getCourseDiscussions,
   addDiscussionMessage 
 } from '@/utils/database';
+import type { DiscussionMessage, DiscussionThread } from '@/utils/database/types';
 
 interface DiscussionMessage {
   id: string;

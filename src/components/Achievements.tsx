@@ -1,11 +1,11 @@
 
 import React from 'react';
-import { Badge as BadgeType } from '@/utils/database';
+import { Badge } from '@/utils/database/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
 
 interface AchievementsProps {
-  badges: BadgeType[];
+  badges: Badge[];
 }
 
 const Achievements: React.FC<AchievementsProps> = ({ badges }) => {

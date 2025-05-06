@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Certificate as CertificateType } from '@/utils/database';
+import { Certificate as CertificateType } from '@/utils/database/types';
 import { Download } from 'lucide-react';
 import { format } from 'date-fns';
 
