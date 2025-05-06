@@ -133,6 +133,8 @@ export interface CaseStudy {
   id: string;
   title: string;
   description: string;
+  location: string;
+  year: number;
   images: string[];
   tags: string[];
   author: string;
@@ -631,36 +633,101 @@ const courses: Course[] = [
 ];
 
 // Mock case studies data
-const caseStudies: CaseStudy[] = [
+const caseStudiesData: CaseStudy[] = [
   {
-    id: 'case-1',
-    title: 'Eastgate Centre: Biomimicry in Zimbabwe',
-    description: 'The Eastgate Centre in Harare, Zimbabwe is a remarkable example of biomimetic architecture, drawing inspiration from termite mounds. Designed by architect Mick Pearce in collaboration with engineers at Arup Associates, the building uses passive cooling strategies observed in termite colonies.\n\nTermites maintain the temperature inside their mounds within one degree day and night, despite external temperatures ranging from 42°C to 3°C. Similarly, the Eastgate Centre uses a ventilation system that draws in cool air at night to lower the building\'s temperature and expels heat during the day, significantly reducing energy consumption compared to conventional air-conditioned buildings.',
+    id: "cs1",
+    title: "Eastgate Centre",
+    description: "The Eastgate Centre in Harare, Zimbabwe is a shopping centre and office block designed by architect Mick Pearce with engineers Arup. The building uses passive cooling systems inspired by termite mounds found in Zimbabwe. The building maintains its temperature without conventional air-conditioning or heating, using only 10% of the energy of a conventional building of its size.\n\nThe building is modeled on the self-cooling mounds made by termites in Africa. The termites achieve this by constantly opening and closing vents throughout the mound to manage convection currents that draw in cool air from underground chambers and venting hot air out through channels to the peak of the mound.",
+    location: "Harare, Zimbabwe",
+    year: 1996,
     images: [
-      'https://images.unsplash.com/photo-1518005068251-37900150dfca',
-      'https://images.unsplash.com/photo-1464195244916-405fa0a82545'
+      "https://images.unsplash.com/photo-1492321936769-b49830bc1d1e",
+      "https://images.unsplash.com/photo-1486718448742-163732cd1544",
+      "https://images.unsplash.com/photo-1433086966358-54859d0ed716",
+      "https://images.unsplash.com/photo-1439337153520-7082a56a81f4"
     ],
-    tags: ['biomimicry', 'passive cooling', 'commercial architecture', 'Zimbabwe'],
-    author: 'System',
-    authorId: 'system',
+    tags: ["biomimicry", "passive cooling", "sustainable architecture", "termite-inspired", "energy efficiency"],
+    author: "System",
+    authorId: "system",
     featured: true,
     published: true,
-    createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+    createdAt: "2023-06-15T10:30:00Z"
   },
   {
-    id: 'case-2',
-    title: 'Bosco Verticale: Vertical Forest Towers',
-    description: 'The Bosco Verticale (Vertical Forest) in Milan, Italy consists of two residential towers designed by Stefano Boeri Architetti. These towers host over 900 trees and thousands of plants distributed according to sun exposure on the facades.\n\nThis living facade helps mitigate air pollution, produces oxygen, and regulates temperature within the building. The vegetation also provides natural shading in summer while allowing sunlight to penetrate in winter when deciduous plants lose their leaves. Beyond environmental benefits, the constant presence of lush greenery provides psychological benefits to residents who experience a connection to nature despite living in a dense urban setting.',
+    id: "cs2",
+    title: "Gardens by the Bay",
+    description: "Gardens by the Bay is a nature park spanning 101 hectares in the Central Region of Singapore. The park consists of three waterfront gardens: Bay South Garden, Bay East Garden and Bay Central Garden.\n\nThe Supertree Grove features vertical gardens that perform environmentally sustainable functions. The 18 Supertrees range from 25-50 meters in height and serve as vertical gardens covered in tropical flowering climbers, epiphytes and ferns. At night, the Supertrees come alive with a dazzling light show.",
+    location: "Singapore",
+    year: 2012,
     images: [
-      'https://images.unsplash.com/photo-1545566898-4a44e508aa26',
-      'https://images.unsplash.com/photo-1451976426598-a7593bd6d0b2'
+      "https://images.unsplash.com/photo-1466442929976-97f336a657be", 
+      "https://images.unsplash.com/photo-1506146332389-18140dc7b2fb",
+      "https://images.unsplash.com/photo-1494616150024-f6040d5220c0",
+      "https://images.unsplash.com/photo-1562761397-97feced9b17b"
     ],
-    tags: ['vertical forest', 'urban greening', 'residential', 'Italy'],
-    author: 'System',
-    authorId: 'system',
+    tags: ["urban nature", "vertical garden", "sustainable design", "photovoltaic", "rainwater harvesting"],
+    author: "System",
+    authorId: "system",
+    featured: true,
+    published: true,
+    createdAt: "2023-06-16T10:30:00Z"
+  },
+  {
+    id: "cs3",
+    title: "Bosco Verticale",
+    description: "Bosco Verticale (Vertical Forest) is a pair of residential towers in the Porta Nuova district of Milan, Italy. The two buildings have 900 trees, 5,000 shrubs, and 11,000 perennial plants distributed across the facades.\n\nThe vegetation helps to moderate temperatures inside the building, produces oxygen, absorbs CO2 and dust particles, and protects from noise pollution, improving the quality of living spaces and saving energy.",
+    location: "Milan, Italy",
+    year: 2014,
+    images: [
+      "https://images.unsplash.com/photo-1578913696021-1de73e8886cf",
+      "https://images.unsplash.com/photo-1587064712555-6e206484699b",
+      "https://images.unsplash.com/photo-1585370092307-e7fb7cc36947",
+      "https://images.unsplash.com/photo-1578913845501-3fedfd886a72"
+    ],
+    tags: ["vertical forest", "urban biodiversity", "sustainable architecture", "green building", "microclimate"],
+    author: "System",
+    authorId: "system",
     featured: false,
     published: true,
-    createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString()
+    createdAt: "2023-06-17T10:30:00Z"
+  },
+  {
+    id: "cs4",
+    title: "Fallingwater House",
+    description: "Fallingwater is a house designed by American architect Frank Lloyd Wright in 1935 in the Laurel Highlands of southwest Pennsylvania. The home was built partly over a waterfall on Bear Run in the Mill Run section of Stewart Township, Fayette County, Pennsylvania.\n\nTime cited it as Wright's \"most beautiful job\" after its completion. It is listed among Smithsonian's \"Life List of 28 Places to See Before You Die.\" The house exemplifies Wright's philosophy of organic architecture, which promotes harmony between human habitation and the natural world.",
+    location: "Pennsylvania, USA",
+    year: 1939,
+    images: [
+      "https://images.unsplash.com/photo-1554383937-27f57704cca7",
+      "https://images.unsplash.com/photo-1548881655-c0974c0c1517",
+      "https://images.unsplash.com/photo-1609342122563-a43ac8917a3a",
+      "https://images.unsplash.com/photo-1608053439895-e9b07d77d4b9"
+    ],
+    tags: ["organic architecture", "waterfall integration", "natural materials", "landscape harmony", "Frank Lloyd Wright"],
+    author: "System",
+    authorId: "system",
+    featured: false,
+    published: true,
+    createdAt: "2023-06-18T10:30:00Z"
+  },
+  {
+    id: "cs5",
+    title: "The Eden Project",
+    description: "The Eden Project is an educational charity and social enterprise located in Cornwall, England. The complex is dominated by two huge enclosures consisting of adjoining domes that house thousands of plant species.\n\nThe domes consist of hundreds of hexagonal and pentagonal, inflated, plastic cells supported by steel frames. The first dome emulates a tropical environment, the second a Mediterranean environment. The project has transformed a disused china clay pit into a rich, global garden where people can learn about nature and how we depend on it.",
+    location: "Cornwall, United Kingdom",
+    year: 2001,
+    images: [
+      "https://images.unsplash.com/photo-1506146332389-18140dc7b2fb",
+      "https://images.unsplash.com/photo-1602939579051-8bfaf614f1c0",
+      "https://images.unsplash.com/photo-1553539837-3922321ec8bd",
+      "https://images.unsplash.com/photo-1576645514113-1c6df35cbf1b"
+    ],
+    tags: ["biodome", "ecological restoration", "botanical garden", "environmental education", "biosphere"],
+    author: "System",
+    authorId: "system",
+    featured: false,
+    published: true,
+    createdAt: "2023-06-19T10:30:00Z"
   }
 ];
 
@@ -975,47 +1042,34 @@ export const deleteStudyItem = (userId: string, itemId: string) => {
 };
 
 // Case Study Functions
-export const getCaseStudies = () => {
-  return caseStudies;
+export const getCaseStudies = (): CaseStudy[] => {
+  return caseStudiesData;
 };
 
-export const getCaseStudyById = (id: string) => {
-  return caseStudies.find(study => study.id === id) || null;
+export const getCaseStudyById = (id: string): CaseStudy | undefined => {
+  return caseStudiesData.find(study => study.id === id);
 };
 
-interface CaseStudyInput {
-  title: string;
-  description: string;
-  images: string[];
-  tags: string[];
-  author: string;
-  authorId: string;
-}
-
-export const addCaseStudy = (study: CaseStudyInput) => {
+export const addCaseStudy = (caseStudy: Omit<CaseStudy, "id" | "featured" | "published" | "createdAt">): CaseStudy => {
   const newCaseStudy: CaseStudy = {
-    id: generateId(),
-    title: study.title,
-    description: study.description,
-    images: study.images,
-    tags: study.tags,
-    author: study.author,
-    authorId: study.authorId,
+    id: `cs${caseStudiesData.length + 1}`,
+    ...caseStudy,
     featured: false,
-    published: false, // Requires instructor approval
+    published: false, // Needs instructor review before publishing
     createdAt: new Date().toISOString()
   };
   
-  caseStudies.push(newCaseStudy);
-  return newCaseStudy.id;
+  caseStudiesData.push(newCaseStudy);
+  return newCaseStudy;
 };
 
-export const publishCaseStudy = (studyId: string, shouldPublish: boolean = true) => {
-  const study = caseStudies.find(s => s.id === studyId);
-  if (!study) return false;
-  
-  study.published = shouldPublish;
-  return true;
+export const publishCaseStudy = (id: string, publish: boolean = true): boolean => {
+  const caseStudy = caseStudiesData.find(study => study.id === id);
+  if (caseStudy) {
+    caseStudy.published = publish;
+    return true;
+  }
+  return false;
 };
 
 // Discussion Functions
@@ -1090,3 +1144,6 @@ export const addDiscussionMessage = (input: MessageInput) => {
   
   return message.id;
 };
+
+// Make sure to export authenticateUser and other functions from the file
+export { authenticateUser, createUser, updateUser, enrollCourse, completeCourse, completeLesson };
