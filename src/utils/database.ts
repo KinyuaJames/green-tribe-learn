@@ -7,9 +7,9 @@ export interface Badge {
   id: string;
   title: string;
   description: string;
-  image: string;
+  image?: string;
   imageUrl: string;
-  dateEarned: string;
+  dateEarned?: string;
   earnedDate: string;
 }
 
@@ -17,7 +17,7 @@ export interface Certificate {
   id: string;
   courseId: string;
   courseName: string;
-  courseTitle: string;
+  courseTitle?: string;
   issueDate: string;
   completionDate: string;
   certificateUrl: string;
@@ -1156,7 +1156,7 @@ export const addDiscussionMessage = (input: MessageInput) => {
   return message.id;
 };
 
-// Additional functions that were missing
+// Additional functions
 
 // Update user information
 export const updateUser = (userId: string, userData: Partial<User>): boolean => {
