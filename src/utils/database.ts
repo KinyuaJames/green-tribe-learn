@@ -461,7 +461,7 @@ const courses: Course[] = [
             id: 'lesson-3-1',
             title: 'Create Your Nature Map',
             type: 'assignment',
-            content: 'For this assignment, you will create a "Nature Map" of a space you'd like to transform using biophilic design principles.\n\nYou can submit either:\n1. A voice recording describing your vision (3 minutes maximum)\n2. A sketch or image with annotations showing your ideas\n\nInclude the following elements:\n- The type of space you're designing (home, office, public space, etc.)\n- At least 3 specific biophilic elements you would incorporate\n- How these elements connect to the local environment and culture\n- One challenge you might face in implementation and how you would address it',
+            content: "For this assignment, you will create a \"Nature Map\" of a space you'd like to transform using biophilic design principles.\n\nYou can submit either:\n1. A voice recording describing your vision (3 minutes maximum)\n2. A sketch or image with annotations showing your ideas\n\nInclude the following elements:\n- The type of space you're designing (home, office, public space, etc.)\n- At least 3 specific biophilic elements you would incorporate\n- How these elements connect to the local environment and culture\n- One challenge you might face in implementation and how you would address it",
             duration: '45 min',
             isLocked: false
           },
@@ -469,7 +469,7 @@ const courses: Course[] = [
             id: 'lesson-3-2',
             title: 'Reflection & Course Completion',
             type: 'assignment',
-            content: 'Congratulations on reaching the end of the course! For this final assignment, record a brief reflection (2-3 minutes) on your learning journey:\n\n1. The most important concept you learned about biophilic design\n2. How you plan to apply biophilic principles in your life or work\n3. One question or area you'd like to explore further\n\nAfter submitting your reflection, you'll be able to download your course completion certificate.',
+            content: "Congratulations on reaching the end of the course! For this final assignment, record a brief reflection (2-3 minutes) on your learning journey:\n\n1. The most important concept you learned about biophilic design\n2. How you plan to apply biophilic principles in your life or work\n3. One question or area you'd like to explore further\n\nAfter submitting your reflection, you'll be able to download your course completion certificate.",
             duration: '20 min',
             isLocked: false
           }
@@ -587,7 +587,7 @@ const caseStudies: CaseStudy[] = [
   {
     id: 'case-1',
     title: 'Eastgate Centre: Biomimicry in Zimbabwe',
-    description: 'The Eastgate Centre in Harare, Zimbabwe is a remarkable example of biomimetic architecture, drawing inspiration from termite mounds. Designed by architect Mick Pearce in collaboration with engineers at Arup Associates, the building uses passive cooling strategies observed in termite colonies.\n\nTermites maintain the temperature inside their mounds within one degree day and night, despite external temperatures ranging from 42°C to 3°C. Similarly, the Eastgate Centre uses a ventilation system that draws in cool air at night to lower the building's temperature and expels heat during the day, significantly reducing energy consumption compared to conventional air-conditioned buildings.',
+    description: 'The Eastgate Centre in Harare, Zimbabwe is a remarkable example of biomimetic architecture, drawing inspiration from termite mounds. Designed by architect Mick Pearce in collaboration with engineers at Arup Associates, the building uses passive cooling strategies observed in termite colonies.\n\nTermites maintain the temperature inside their mounds within one degree day and night, despite external temperatures ranging from 42°C to 3°C. Similarly, the Eastgate Centre uses a ventilation system that draws in cool air at night to lower the building\'s temperature and expels heat during the day, significantly reducing energy consumption compared to conventional air-conditioned buildings.',
     images: [
       'https://images.unsplash.com/photo-1518005068251-37900150dfca',
       'https://images.unsplash.com/photo-1464195244916-405fa0a82545'
