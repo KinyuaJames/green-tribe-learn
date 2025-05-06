@@ -1,87 +1,62 @@
 
-// Type definitions for our data models
+// This file simulates a database with mock data
+// In a real application, this would be replaced with actual API calls to a backend
+
+import { toast } from 'sonner';
+
 export interface User {
   id: string;
-  fullName: string;
   email: string;
-  password: string; // In a real app, this would be hashed
-  enrolledCourses: string[]; // Array of course IDs
-  createdAt: string;
-  completedLessons: string[]; // Array of lesson IDs
-  badges: Badge[]; // Achievements earned
-  completedQuizzes: QuizAttempt[]; // Quiz results
-  certificates: Certificate[]; // Earned certificates
-}
-
-export interface Badge {
-  id: string;
-  title: string;
-  description: string;
-  image: string;
-  dateEarned: string;
-}
-
-export interface Certificate {
-  id: string;
-  courseId: string;
-  courseTitle: string;
-  issueDate: string;
-  completionDate: string;
-}
-
-export interface QuizAttempt {
-  id: string;
-  quizId: string;
-  score: number;
-  totalQuestions: number;
-  completedAt: string;
+  password: string;
+  name?: string;
+  avatar?: string;
+  enrolledCourses: string[];
+  completedLessons: string[];
+  quizAttempts: QuizAttempt[];
+  studyGallery: StudyItem[];
+  role: 'student' | 'instructor' | 'admin';
 }
 
 export interface Course {
   id: string;
   title: string;
   description: string;
-  image: string;
-  price: number;
   instructor: string;
   instructorImage?: string;
+  price: number;
+  isFree: boolean;
   duration: string;
-  modules: Module[];
   level?: string;
   rating?: number;
   studentsCount?: number;
-  tags?: string[];
-  isFeatured?: boolean;
-  isFree?: boolean;
-  isLocked?: boolean; // Whether the course is locked (requires payment)
+  image: string;
+  isLocked: boolean;
+  isFeatured: boolean;
+  modules: Module[];
   resources?: Resource[];
-}
-
-export interface Resource {
-  id: string;
-  title: string;
-  description: string;
-  type: 'pdf' | 'video' | 'audio' | 'link';
-  url: string;
-  icon: string;
+  tags?: string[];
 }
 
 export interface Module {
   id: string;
   title: string;
+  description?: string;
+  isLocked: boolean;
   lessons: Lesson[];
-  isLocked?: boolean; // Whether the module is locked (requires previous completion)
 }
 
 export interface Lesson {
   id: string;
   title: string;
-  type: 'video' | 'text' | 'quiz' | 'assignment' | 'download';
-  duration?: string;
+  description?: string;
+  type: 'video' | 'text' | 'quiz' | 'assignment';
   content?: string;
-  completed?: boolean;
+  duration?: string;
+  isLocked: boolean;
+  videoUrl?: string;
+  thumbnailUrl?: string;
   quiz?: Quiz;
-  isLocked?: boolean; // Whether the lesson is locked (requires previous completion)
+  requiresAudioFeedback?: boolean; // For lessons requiring audio feedback
 }
 
 export interface Quiz {
@@ -90,7 +65,7 @@ export interface Quiz {
   description?: string;
   questions: QuizQuestion[];
   passingScore: number;
-  timeLimit?: number; // Time limit in seconds
+  timeLimit?: number; // in seconds
 }
 
 export interface QuizQuestion {
@@ -105,790 +80,935 @@ export interface QuizOption {
   text: string;
 }
 
-// Database initialization
-export const initializeDatabase = () => {
-  if (!localStorage.getItem('users')) {
-    // Get all lessons IDs from the free course to mark them as completed
-    const freeLessonIds: string[] = [];
-    
-    // Create all courses first to gather lesson IDs
-    const initialCourses = getInitialCourses();
-    
-    // Find the free course and extract all lesson IDs
-    const freeCourse = initialCourses.find(course => course.id === 'free-course-001');
-    if (freeCourse) {
-      freeCourse.modules.forEach(module => {
-        module.lessons.forEach(lesson => {
-          freeLessonIds.push(lesson.id);
-        });
-      });
-    }
-    
-    // Create our demo user with completed free course lessons
-    const demoUser: User = {
-      id: 'user-001',
-      fullName: 'Demo User',
-      email: 'demo@biophilic.edu',
-      password: 'password123',
-      enrolledCourses: ['1', 'free-course-001'],
-      createdAt: new Date().toISOString(),
-      completedLessons: freeLessonIds,
-      badges: [
-        {
-          id: 'badge-001',
-          title: 'Quick Starter',
-          description: 'Completed your first module',
-          image: 'https://images.unsplash.com/photo-1586892477838-2b96e85e0f96?q=80&w=100',
-          dateEarned: new Date().toISOString()
-        },
-        {
-          id: 'badge-002',
-          title: 'Eco Warrior',
-          description: 'Completed the Biophilic Foundations course',
-          image: 'https://images.unsplash.com/photo-1569591159212-b02a8a1f623d?q=80&w=100',
-          dateEarned: new Date().toISOString()
-        },
-        {
-          id: 'badge-003',
-          title: 'Sustainable Living Pro',
-          description: 'Completed the Introduction to Sustainable Living course',
-          image: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=100',
-          dateEarned: new Date().toISOString()
-        }
-      ],
-      completedQuizzes: [
-        {
-          id: 'quiz-attempt-001',
-          quizId: 'quiz-001',
-          score: 8,
-          totalQuestions: 10,
-          completedAt: new Date().toISOString()
-        },
-        {
-          id: 'quiz-attempt-002',
-          quizId: 'quiz-002',
-          score: 2,
-          totalQuestions: 2,
-          completedAt: new Date().toISOString()
-        }
-      ],
-      certificates: [
-        {
-          id: 'cert-001',
-          courseId: '1',
-          courseTitle: 'Biophilic Foundations: Culturally Rooted Design',
-          issueDate: new Date().toISOString(),
-          completionDate: new Date(Date.now() - 86400000).toISOString()
-        },
-        {
-          id: 'cert-002',
-          courseId: 'free-course-001',
-          courseTitle: 'Introduction to Sustainable Living',
-          issueDate: new Date().toISOString(),
-          completionDate: new Date().toISOString()
-        }
-      ]
-    };
-    
-    localStorage.setItem('users', JSON.stringify([demoUser]));
-  }
-  
-  if (!localStorage.getItem('courses')) {
-    const initialCourses = getInitialCourses();
-    localStorage.setItem('courses', JSON.stringify(initialCourses));
-  }
-};
-
-// Function to get initial courses data
-function getInitialCourses() {
-  return [
-    {
-      id: '1',
-      title: 'Biophilic Foundations: Culturally Rooted Design',
-      description: 'Discover the fundamental principles of biophilic design with an African perspective, connecting traditional wisdom with modern sustainability practices.',
-      image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=600',
-      price: 1000,
-      instructor: 'Wangui Mwangi',
-      instructorImage: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=200',
-      duration: '3 weeks',
-      level: 'Beginner',
-      rating: 4.8,
-      studentsCount: 235,
-      isFeatured: true,
-      isLocked: true, // Paid course is locked until payment
-      tags: ['biophilia', 'african-design', 'nature-architecture', 'green-living'],
-      resources: [
-        {
-          id: 'res-001',
-          title: 'Biophilic Design Handbook',
-          description: 'Comprehensive guide to implementing natural elements in architecture',
-          type: 'pdf',
-          url: '#',
-          icon: 'book-open'
-        },
-        {
-          id: 'res-002',
-          title: 'Sustainability in Practice',
-          description: 'Video lecture by Dr. Nanjala on sustainable building materials',
-          type: 'video',
-          url: '#',
-          icon: 'video'
-        },
-        {
-          id: 'res-003',
-          title: 'Traditional Architecture Catalog',
-          description: 'Collection of indigenous architectural solutions from across Africa',
-          type: 'pdf',
-          url: '#',
-          icon: 'book'
-        }
-      ],
-      modules: [
-        {
-          id: 'm1',
-          title: 'Understanding Biophilia',
-          isLocked: false,
-          lessons: [
-            {
-              id: 'l1',
-              title: 'What is Biophilic Design?',
-              type: 'video',
-              duration: '15 minutes',
-              content: 'Biophilic design reconnects humans with nature in the spaces we live, work, and learn. It draws on the patterns and principles found in the natural world to promote well-being, creativity, and sustainability.',
-              isLocked: false
-            },
-            {
-              id: 'l2',
-              title: 'African Traditions and Nature-Based Living',
-              type: 'text',
-              duration: '30 minutes',
-              content: 'Many African communities historically built in close harmony with their environment. From the earthen homes of West Africa to the shaded compounds of East Africa, our traditions are full of lessons in thermal comfort, social space, and spiritual connectivity.',
-              isLocked: true
-            },
-            {
-              id: 'l3',
-              title: 'Biophilia Quiz',
-              type: 'quiz',
-              duration: '10 minutes',
-              isLocked: true,
-              quiz: {
-                id: 'quiz-001',
-                title: 'Biophilic Design Principles',
-                description: 'Test your understanding of biophilic design concepts',
-                timeLimit: 300, // 5 minutes
-                questions: [
-                  {
-                    id: 'q1',
-                    text: 'What is the primary focus of biophilic design?',
-                    options: [
-                      { id: 'a', text: 'Maximizing profit in construction' },
-                      { id: 'b', text: 'Connecting humans with nature' },
-                      { id: 'c', text: 'Using only artificial materials' },
-                      { id: 'd', text: 'Minimizing outdoor spaces' }
-                    ],
-                    correctOptionId: 'b'
-                  },
-                  {
-                    id: 'q2',
-                    text: 'Which of the following is NOT a benefit of biophilic design?',
-                    options: [
-                      { id: 'a', text: 'Improved mental health' },
-                      { id: 'b', text: 'Enhanced creativity' },
-                      { id: 'c', text: 'Increased construction costs only' },
-                      { id: 'd', text: 'Better air quality' }
-                    ],
-                    correctOptionId: 'c'
-                  },
-                  {
-                    id: 'q3',
-                    text: 'Which traditional African building material is most aligned with biophilic principles?',
-                    options: [
-                      { id: 'a', text: 'Plastic sheeting' },
-                      { id: 'b', text: 'Fired bricks' },
-                      { id: 'c', text: 'Earth/clay' },
-                      { id: 'd', text: 'Synthetic fibers' }
-                    ],
-                    correctOptionId: 'c'
-                  }
-                ],
-                passingScore: 2
-              }
-            }
-          ]
-        },
-        {
-          id: 'm2',
-          title: 'Principles in Practice',
-          isLocked: true,
-          lessons: [
-            {
-              id: 'l3',
-              title: 'Case Study – Mlolongo Heritage House',
-              type: 'text',
-              duration: '20 minutes',
-              content: 'This family home, located in Mlolongo, integrates native vegetation, a shaded inner courtyard, natural clay walls, and rainwater harvesting. Built with both memory and function in mind, it\'s an example of biophilia meeting modern life.',
-              isLocked: true
-            },
-            {
-              id: 'l4',
-              title: 'Designing With the Five Senses',
-              type: 'download',
-              duration: '25 minutes',
-              content: 'Biophilic design is not only visual — it engages all five senses. How does your space sound? Smell? Feel? Use this checklist to assess your current environment.',
-              isLocked: true
-            }
-          ]
-        },
-        {
-          id: 'm3',
-          title: 'Your Biophilic Design Journey',
-          isLocked: true,
-          lessons: [
-            {
-              id: 'l5',
-              title: 'Create Your Nature Map',
-              type: 'assignment',
-              duration: '45 minutes',
-              content: 'Describe your ideal biophilic space using any of the following: A sketch or image upload, a short written paragraph, or a voice note submission.',
-              isLocked: true
-            },
-            {
-              id: 'l6',
-              title: 'Reflection & Closing',
-              type: 'quiz',
-              duration: '15 minutes',
-              content: 'How will you carry biophilic wisdom into your everyday life or work? Reflect on one actionable takeaway.',
-              isLocked: true
-            }
-          ]
-        }
-      ]
-    },
-    {
-      id: 'free-course-001',
-      title: 'Introduction to Sustainable Living',
-      description: 'Learn the basics of sustainable living with practical tips you can implement today. This free course covers eco-friendly habits, waste reduction, and simple changes to reduce your environmental footprint.',
-      image: 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=600',
-      price: 0,
-      instructor: 'Amara Okafor',
-      instructorImage: 'https://images.unsplash.com/photo-1589156191108-c762ff4b96ab?q=80&w=200',
-      duration: '1 week',
-      level: 'Beginner',
-      rating: 4.5,
-      studentsCount: 523,
-      isFree: true,
-      isFeatured: true,
-      isLocked: false, // Free course is not locked
-      tags: ['sustainability', 'eco-friendly', 'beginners'],
-      resources: [
-        {
-          id: 'res-004',
-          title: 'Sustainable Living Checklist',
-          description: 'A practical guide to implementing sustainable habits in daily life',
-          type: 'pdf',
-          url: '#',
-          icon: 'file-text'
-        },
-        {
-          id: 'res-005',
-          title: 'Zero Waste Kitchen Guide',
-          description: 'Tips and tricks for reducing waste in your kitchen',
-          type: 'pdf',
-          url: '#',
-          icon: 'file'
-        },
-        {
-          id: 'res-006',
-          title: 'Introduction to Composting',
-          description: 'A beginner-friendly video guide on starting your composting journey',
-          type: 'video',
-          url: '#',
-          icon: 'video'
-        },
-        {
-          id: 'res-007',
-          title: 'Sustainable Living Podcast',
-          description: 'Listen to our podcast about sustainable living practices',
-          type: 'audio',
-          url: '#',
-          icon: 'mic'
-        },
-        {
-          id: 'res-008',
-          title: 'Recycling Reference Guide',
-          description: 'Learn what can and cannot be recycled in your area',
-          type: 'pdf',
-          url: '#',
-          icon: 'file'
-        }
-      ],
-      modules: [
-        {
-          id: 'm1-free',
-          title: 'Sustainability Basics',
-          isLocked: false,
-          lessons: [
-            {
-              id: 'l1-free',
-              title: 'What is Sustainability?',
-              type: 'video',
-              duration: '10 minutes',
-              content: 'An introduction to sustainability concepts and why they matter in today\'s world.',
-              isLocked: false
-            },
-            {
-              id: 'l2-free',
-              title: 'The Three Pillars of Sustainability',
-              type: 'text',
-              duration: '15 minutes',
-              content: 'Environmental, economic, and social sustainability - understanding how they interconnect and reinforce each other.',
-              isLocked: false
-            },
-            {
-              id: 'l3-free',
-              title: 'Sustainability Quiz',
-              type: 'quiz',
-              duration: '5 minutes',
-              isLocked: false,
-              quiz: {
-                id: 'quiz-002',
-                title: 'Sustainability Basics Quiz',
-                description: 'Test your understanding of key sustainability concepts',
-                timeLimit: 180, // 3 minutes
-                questions: [
-                  {
-                    id: 'q1-free',
-                    text: 'What are the three pillars of sustainability?',
-                    options: [
-                      { id: 'a', text: 'Design, Development, Deployment' },
-                      { id: 'b', text: 'Environmental, Economic, Social' },
-                      { id: 'c', text: 'Research, Education, Practice' },
-                      { id: 'd', text: 'Past, Present, Future' }
-                    ],
-                    correctOptionId: 'b'
-                  },
-                  {
-                    id: 'q2-free',
-                    text: 'Which of these is NOT a benefit of sustainable living?',
-                    options: [
-                      { id: 'a', text: 'Reduced carbon footprint' },
-                      { id: 'b', text: 'Higher quality of life' },
-                      { id: 'c', text: 'Increased waste production' },
-                      { id: 'd', text: 'Community resilience' }
-                    ],
-                    correctOptionId: 'c'
-                  }
-                ],
-                passingScore: 1
-              }
-            }
-          ]
-        },
-        {
-          id: 'm2-free',
-          title: 'Daily Sustainable Practices',
-          isLocked: true,
-          lessons: [
-            {
-              id: 'l4-free',
-              title: 'Reducing Household Waste',
-              type: 'video',
-              duration: '12 minutes',
-              content: 'Learn practical ways to reduce waste generation in your home through mindful consumption and reuse strategies.',
-              isLocked: true
-            },
-            {
-              id: 'l5-free',
-              title: 'Energy Conservation Tips',
-              type: 'text',
-              duration: '15 minutes',
-              content: 'Simple but effective ways to reduce your energy consumption and lower your carbon footprint.',
-              isLocked: true
-            },
-            {
-              id: 'l6-free',
-              title: 'Daily Practices Quiz',
-              type: 'quiz',
-              duration: '5 minutes',
-              isLocked: true,
-              quiz: {
-                id: 'quiz-003',
-                title: 'Sustainable Daily Practices Quiz',
-                description: 'Test your knowledge of everyday sustainable actions',
-                timeLimit: 240, // 4 minutes
-                questions: [
-                  {
-                    id: 'q3-free',
-                    text: 'Which of these actions saves the most energy in a typical home?',
-                    options: [
-                      { id: 'a', text: 'Turning off lights when not in use' },
-                      { id: 'b', text: 'Proper insulation of walls and ceilings' },
-                      { id: 'c', text: 'Using energy-efficient appliances' },
-                      { id: 'd', text: 'Unplugging electronics when not in use' }
-                    ],
-                    correctOptionId: 'b'
-                  },
-                  {
-                    id: 'q4-free',
-                    text: 'Which waste reduction strategy is most effective?',
-                    options: [
-                      { id: 'a', text: 'Recycling all materials' },
-                      { id: 'b', text: 'Reducing consumption in the first place' },
-                      { id: 'c', text: 'Using biodegradable packaging' },
-                      { id: 'd', text: 'Composting food waste' }
-                    ],
-                    correctOptionId: 'b'
-                  },
-                  {
-                    id: 'q5-free',
-                    text: 'What is the most effective way to reduce water usage in a household?',
-                    options: [
-                      { id: 'a', text: 'Taking shorter showers' },
-                      { id: 'b', text: 'Installing low-flow fixtures' },
-                      { id: 'c', text: 'Fixing leaky faucets' },
-                      { id: 'd', text: 'Using a dishwasher instead of hand washing' }
-                    ],
-                    correctOptionId: 'b'
-                  }
-                ],
-                passingScore: 2
-              }
-            }
-          ]
-        },
-        {
-          id: 'm3-free',
-          title: 'Sustainable Living Project',
-          isLocked: true,
-          lessons: [
-            {
-              id: 'l7-free',
-              title: 'Planning Your Sustainability Project',
-              type: 'text',
-              duration: '20 minutes',
-              content: 'Learn how to identify an area in your life where you can make a meaningful sustainable change and how to plan for its implementation.',
-              isLocked: true
-            },
-            {
-              id: 'l8-free',
-              title: 'Document Your Sustainability Journey',
-              type: 'assignment',
-              duration: '30 minutes',
-              content: 'Record a short audio reflection about your sustainability goals and the changes you plan to implement in your daily life.',
-              isLocked: true
-            },
-            {
-              id: 'l9-free',
-              title: 'Final Assessment',
-              type: 'quiz',
-              duration: '10 minutes',
-              isLocked: true,
-              quiz: {
-                id: 'quiz-004',
-                title: 'Sustainable Living Comprehensive Assessment',
-                description: 'Test your overall understanding of sustainable living concepts',
-                timeLimit: 300, // 5 minutes
-                questions: [
-                  {
-                    id: 'q6-free',
-                    text: 'Which approach best exemplifies the concept of circular economy?',
-                    options: [
-                      { id: 'a', text: 'Recycling all waste materials' },
-                      { id: 'b', text: 'Designing products for multiple lifecycles' },
-                      { id: 'c', text: 'Using biodegradable materials only' },
-                      { id: 'd', text: 'Purchasing carbon offsets' }
-                    ],
-                    correctOptionId: 'b'
-                  },
-                  {
-                    id: 'q7-free',
-                    text: 'What is the most important factor in creating lasting sustainable change?',
-                    options: [
-                      { id: 'a', text: 'Government regulations' },
-                      { id: 'b', text: 'Corporate responsibility' },
-                      { id: 'c', text: 'Individual habits and behaviors' },
-                      { id: 'd', text: 'Technological innovation' }
-                    ],
-                    correctOptionId: 'c'
-                  },
-                  {
-                    id: 'q8-free',
-                    text: 'Which statement best describes the relationship between sustainability and equity?',
-                    options: [
-                      { id: 'a', text: 'They are unrelated concepts' },
-                      { id: 'b', text: 'Sustainability often comes at the expense of equity' },
-                      { id: 'c', text: 'True sustainability must include social equity' },
-                      { id: 'd', text: 'Equity is important but separate from environmental concerns' }
-                    ],
-                    correctOptionId: 'c'
-                  }
-                ],
-                passingScore: 2
-              }
-            }
-          ]
-        }
-      ]
-    }
-  ];
+export interface QuizAttempt {
+  quizId: string;
+  score: number;
+  totalQuestions: number;
+  passed: boolean;
+  date: string;
 }
 
-// User related functions
-export const getUsers = (): User[] => {
-  return JSON.parse(localStorage.getItem('users') || '[]');
+export interface Resource {
+  id: string;
+  title: string;
+  description: string;
+  type: 'pdf' | 'video' | 'audio' | 'link';
+  url: string;
+}
+
+export interface StudyItem {
+  id: string;
+  title: string;
+  type: 'image' | 'note' | 'voice';
+  content: string;
+  thumbnail?: string;
+  createdAt: string;
+  moduleId?: string;
+  moduleName?: string;
+  courseId?: string;
+  lessonId?: string;
+}
+
+export interface CaseStudy {
+  id: string;
+  title: string;
+  description: string;
+  images: string[];
+  tags: string[];
+  author: string;
+  authorId: string;
+  featured: boolean;
+  published: boolean;
+  createdAt: string;
+}
+
+export interface DiscussionMessage {
+  id: string;
+  threadId: string;
+  userId: string;
+  userName: string;
+  userRole: 'student' | 'instructor';
+  content: string;
+  createdAt: string;
+}
+
+export interface DiscussionThread {
+  id: string;
+  courseId: string;
+  studentId: string;
+  studentName: string;
+  title: string;
+  status: 'open' | 'closed';
+  createdAt: string;
+  lastMessageAt: string;
+  messages: DiscussionMessage[];
+}
+
+// Helper to generate unique IDs
+const generateId = () => Math.random().toString(36).substring(2, 11);
+
+// Mock users data
+const users: User[] = [
+  {
+    id: '1',
+    email: 'user@example.com',
+    password: 'password123',
+    name: 'Demo User',
+    enrolledCourses: ['1'],
+    completedLessons: [],
+    quizAttempts: [],
+    studyGallery: [],
+    role: 'student'
+  },
+  {
+    id: '2',
+    email: 'instructor@biophilic.edu',
+    password: 'password123',
+    name: 'Jane Instructor',
+    avatar: 'https://i.pravatar.cc/150?img=48',
+    enrolledCourses: [],
+    completedLessons: [],
+    quizAttempts: [],
+    studyGallery: [],
+    role: 'instructor'
+  },
+  {
+    id: '3',
+    email: 'demo@biophilic.edu',
+    password: 'password123',
+    name: 'Demo Student',
+    enrolledCourses: ['1', '2'],
+    completedLessons: [
+      'lesson-1-1', 'lesson-1-2', 'lesson-1-3', 
+      'lesson-2-1', 'lesson-2-2', 'lesson-2-3'
+    ],
+    quizAttempts: [
+      {
+        quizId: 'quiz-1',
+        score: 9,
+        totalQuestions: 10,
+        passed: true,
+        date: new Date().toISOString()
+      },
+      {
+        quizId: 'quiz-2',
+        score: 8,
+        totalQuestions: 10,
+        passed: true,
+        date: new Date().toISOString()
+      }
+    ],
+    studyGallery: [
+      {
+        id: 'note-1',
+        title: 'Introduction Notes',
+        type: 'note',
+        content: 'Biophilic design integrates natural elements into built environments to enhance human well-being. Key principles include direct exposure to nature, indirect references to nature, and space/place conditions that promote comfort and engagement.',
+        createdAt: new Date().toISOString(),
+        moduleId: 'module-1',
+        moduleName: 'Understanding Biophilia',
+        courseId: '1',
+        lessonId: 'lesson-1-1'
+      },
+      {
+        id: 'voice-1',
+        title: 'Reflection on Traditional Design',
+        type: 'voice',
+        content: 'audio-url-placeholder',
+        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        moduleId: 'module-1',
+        moduleName: 'Understanding Biophilia',
+        courseId: '1',
+        lessonId: 'lesson-1-2'
+      },
+      {
+        id: 'image-1',
+        title: 'Biophilic Case Example',
+        type: 'image',
+        content: 'https://images.unsplash.com/photo-1618220179428-22790b461013',
+        createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+        moduleId: 'module-2',
+        moduleName: 'Principles in Practice',
+        courseId: '1',
+        lessonId: 'lesson-2-1'
+      },
+      {
+        id: 'note-2',
+        title: 'Personal Design Ideas',
+        type: 'note',
+        content: 'Ideas for my own garden: 1. Use local plants to attract native birds, 2. Create a small water feature, 3. Use natural materials like wood and stone for boundaries.',
+        createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+      }
+    ],
+    role: 'student'
+  }
+];
+
+// Mock courses data
+const courses: Course[] = [
+  {
+    id: '1',
+    title: 'Biophilic Design Fundamentals',
+    description: 'Learn the core principles of biophilic design and how to incorporate nature-inspired elements into your living and working spaces.',
+    instructor: 'Wangui Mwangi',
+    instructorImage: 'https://i.pravatar.cc/150?img=48',
+    price: 0,
+    isFree: true,
+    duration: '3 weeks',
+    level: 'Beginner',
+    rating: 4.8,
+    studentsCount: 243,
+    image: 'https://images.unsplash.com/photo-1618220179428-22790b461013',
+    isLocked: false,
+    isFeatured: true,
+    tags: ['biophilia', 'sustainable-design', 'beginners'],
+    modules: [
+      {
+        id: 'module-1',
+        title: 'Understanding Biophilia',
+        isLocked: false,
+        lessons: [
+          {
+            id: 'lesson-1-1',
+            title: 'What is Biophilic Design?',
+            type: 'video',
+            content: 'Biophilic design is an approach to architecture and interior design that seeks to connect building occupants more closely to nature. It incorporates natural elements, materials, and forms into the built environment to enhance human well-being.\n\nThe term "biophilia" was popularized by biologist Edward O. Wilson, who suggested that humans have an innate connection to nature. In design, this translates to creating spaces that incorporate natural light, ventilation, plants, water features, natural materials, and views of nature.',
+            duration: '10 min',
+            isLocked: false
+          },
+          {
+            id: 'lesson-1-2',
+            title: 'African Traditions and Nature-Based Living',
+            type: 'text',
+            content: 'Traditional African architecture and design has long incorporated biophilic principles, often out of necessity and deep cultural connections to the natural world. Many traditional building techniques work in harmony with the local climate and available materials.\n\nExamples include:\n- Courtyards that bring light, air, and greenery into homes\n- Natural material use like clay, wood, and thatch\n- Orientation of buildings to maximize natural ventilation and minimize heat gain\n- Integration of indoor and outdoor living spaces\n- Community layouts that respect and preserve significant natural features',
+            duration: '15 min',
+            isLocked: false
+          },
+          {
+            id: 'lesson-1-3',
+            title: 'Module 1 Assessment Quiz',
+            type: 'quiz',
+            duration: '15 min',
+            isLocked: false,
+            quiz: {
+              id: 'quiz-1',
+              title: 'Biophilic Design Fundamentals Quiz',
+              description: 'Test your understanding of basic biophilic design concepts',
+              questions: [
+                {
+                  id: 'q1',
+                  text: 'What does the term "biophilia" refer to?',
+                  options: [
+                    { id: 'a1', text: 'Fear of natural environments' },
+                    { id: 'a2', text: 'Love of living systems and nature' },
+                    { id: 'a3', text: 'A type of architectural software' },
+                    { id: 'a4', text: 'A construction material' }
+                  ],
+                  correctOptionId: 'a2'
+                },
+                {
+                  id: 'q2',
+                  text: 'Which is NOT a typical benefit of biophilic design?',
+                  options: [
+                    { id: 'a1', text: 'Reduced stress' },
+                    { id: 'a2', text: 'Improved cognitive function' },
+                    { id: 'a3', text: 'Lower energy consumption' },
+                    { id: 'a4', text: 'Increased property taxes' }
+                  ],
+                  correctOptionId: 'a4'
+                },
+                {
+                  id: 'q3',
+                  text: 'Which is an example of direct experience of nature in biophilic design?',
+                  options: [
+                    { id: 'a1', text: 'Printed images of landscapes' },
+                    { id: 'a2', text: 'Natural shapes in furniture' },
+                    { id: 'a3', text: 'Indoor plants and water features' },
+                    { id: 'a4', text: 'Nature documentaries playing on screens' }
+                  ],
+                  correctOptionId: 'a3'
+                },
+                {
+                  id: 'q4',
+                  text: 'Traditional African architecture often incorporates biophilic elements like:',
+                  options: [
+                    { id: 'a1', text: 'Air conditioning systems' },
+                    { id: 'a2', text: 'Synthetic materials for durability' },
+                    { id: 'a3', text: 'Courtyard designs that bring in light and air' },
+                    { id: 'a4', text: 'Complete separation from the outdoor environment' }
+                  ],
+                  correctOptionId: 'a3'
+                },
+                {
+                  id: 'q5',
+                  text: 'Who popularized the term "biophilia"?',
+                  options: [
+                    { id: 'a1', text: 'Frank Lloyd Wright' },
+                    { id: 'a2', text: 'Edward O. Wilson' },
+                    { id: 'a3', text: 'Leonardo da Vinci' },
+                    { id: 'a4', text: 'Rachel Carson' }
+                  ],
+                  correctOptionId: 'a2'
+                }
+              ],
+              passingScore: 3,
+              timeLimit: 300 // 5 minutes
+            }
+          }
+        ]
+      },
+      {
+        id: 'module-2',
+        title: 'Principles in Practice',
+        isLocked: false,
+        lessons: [
+          {
+            id: 'lesson-2-1',
+            title: 'Case Study – Mlolongo Heritage House',
+            type: 'text',
+            content: 'The Mlolongo Heritage House in Kenya represents a modern interpretation of traditional biophilic design principles. Built in 2018, the residence combines contemporary needs with time-tested approaches to creating harmony with nature.\n\nKey features include:\n- A central courtyard with indigenous plants that provides natural cooling\n- Walls constructed of local earth with natural pigments\n- Strategically placed windows that create dynamic light patterns throughout the day\n- Rainwater harvesting system integrated into the landscape design\n- Semi-permeable outdoor spaces that serve as transition zones between indoors and outdoors',
+            duration: '15 min',
+            isLocked: false
+          },
+          {
+            id: 'lesson-2-2',
+            title: 'Designing With the Five Senses',
+            type: 'assignment',
+            content: 'For this assignment, you will conduct a sensory assessment of a space you use regularly (your home, workplace, or a public space). Consider how the space engages each of your five senses: sight, sound, touch, smell, and even taste.\n\nRecord a voice note (3 minutes maximum) describing:\n1. The space you chose to assess\n2. At least one positive sensory experience in the space\n3. One sensory aspect that could be improved through biophilic design\n4. A specific suggestion for how you would enhance the connection to nature through sensory design',
+            duration: '30 min',
+            isLocked: false
+          },
+          {
+            id: 'lesson-2-3',
+            title: 'Module 2 Assessment Quiz with Reflection',
+            type: 'quiz',
+            duration: '20 min',
+            isLocked: false,
+            requiresAudioFeedback: true,
+            quiz: {
+              id: 'quiz-2',
+              title: 'Biophilic Design Application Quiz',
+              description: 'Test your understanding of applied biophilic design concepts',
+              questions: [
+                {
+                  id: 'q1',
+                  text: 'Which of the following is NOT a key feature of the Mlolongo Heritage House case study?',
+                  options: [
+                    { id: 'a1', text: 'Central courtyard with indigenous plants' },
+                    { id: 'a2', text: 'Walls made of local earth' },
+                    { id: 'a3', text: 'Advanced electronic climate control system' },
+                    { id: 'a4', text: 'Rainwater harvesting system' }
+                  ],
+                  correctOptionId: 'a3'
+                },
+                {
+                  id: 'q2',
+                  text: 'When designing for the sense of sound, which approach best exemplifies biophilic design?',
+                  options: [
+                    { id: 'a1', text: 'Installing speakers that play nature sounds' },
+                    { id: 'a2', text: 'Complete soundproofing to eliminate all outdoor noise' },
+                    { id: 'a3', text: 'Creating spaces where natural sounds like water or rustling leaves can be heard' },
+                    { id: 'a4', text: 'Using bright colors to distract from sound issues' }
+                  ],
+                  correctOptionId: 'a3'
+                },
+                {
+                  id: 'q3',
+                  text: 'Which sensory design element would be most appropriate for enhancing the tactile experience in a biophilic space?',
+                  options: [
+                    { id: 'a1', text: 'Smooth plastic surfaces throughout' },
+                    { id: 'a2', text: 'Varied natural textures like stone, wood, and textiles' },
+                    { id: 'a3', text: 'Uniformly polished surfaces' },
+                    { id: 'a4', text: 'Synthetic carpeting throughout' }
+                  ],
+                  correctOptionId: 'a2'
+                },
+                {
+                  id: 'q4',
+                  text: 'Semi-permeable outdoor spaces in the Mlolongo Heritage House serve as:',
+                  options: [
+                    { id: 'a1', text: 'Security checkpoints' },
+                    { id: 'a2', text: 'Transition zones between indoors and outdoors' },
+                    { id: 'a3', text: 'Storage areas' },
+                    { id: 'a4', text: 'Purely decorative elements' }
+                  ],
+                  correctOptionId: 'a2'
+                },
+                {
+                  id: 'q5',
+                  text: 'Which approach best supports biophilic design for the sense of smell?',
+                  options: [
+                    { id: 'a1', text: 'Using artificial air fresheners with nature scents' },
+                    { id: 'a2', text: 'Eliminating all odors with air purifiers' },
+                    { id: 'a3', text: 'Incorporating fragrant natural elements like herbs or flowers' },
+                    { id: 'a4', text: 'Keeping windows closed to prevent outside smells' }
+                  ],
+                  correctOptionId: 'a3'
+                }
+              ],
+              passingScore: 3,
+              timeLimit: 300 // 5 minutes
+            }
+          }
+        ]
+      },
+      {
+        id: 'module-3',
+        title: 'Your Biophilic Design Journey',
+        isLocked: false,
+        lessons: [
+          {
+            id: 'lesson-3-1',
+            title: 'Create Your Nature Map',
+            type: 'assignment',
+            content: 'For this assignment, you will create a "Nature Map" of a space you'd like to transform using biophilic design principles.\n\nYou can submit either:\n1. A voice recording describing your vision (3 minutes maximum)\n2. A sketch or image with annotations showing your ideas\n\nInclude the following elements:\n- The type of space you're designing (home, office, public space, etc.)\n- At least 3 specific biophilic elements you would incorporate\n- How these elements connect to the local environment and culture\n- One challenge you might face in implementation and how you would address it',
+            duration: '45 min',
+            isLocked: false
+          },
+          {
+            id: 'lesson-3-2',
+            title: 'Reflection & Course Completion',
+            type: 'assignment',
+            content: 'Congratulations on reaching the end of the course! For this final assignment, record a brief reflection (2-3 minutes) on your learning journey:\n\n1. The most important concept you learned about biophilic design\n2. How you plan to apply biophilic principles in your life or work\n3. One question or area you'd like to explore further\n\nAfter submitting your reflection, you'll be able to download your course completion certificate.',
+            duration: '20 min',
+            isLocked: false
+          }
+        ]
+      }
+    ],
+    resources: [
+      {
+        id: 'resource-1',
+        title: 'Biophilic Design Glossary',
+        description: 'Key terms and concepts for understanding biophilic design principles',
+        type: 'pdf',
+        url: '/resources/biophilic-glossary.pdf'
+      },
+      {
+        id: 'resource-2',
+        title: 'Traditional African Architecture and Biophilia',
+        description: 'Audio lecture exploring indigenous design approaches',
+        type: 'audio',
+        url: '/resources/traditional-architecture-lecture.mp3'
+      },
+      {
+        id: 'resource-3',
+        title: '5 Senses Biophilic Checklist',
+        description: 'Downloadable worksheet for evaluating spaces through sensory design',
+        type: 'pdf',
+        url: '/resources/sensory-checklist.pdf'
+      },
+      {
+        id: 'resource-4',
+        title: 'Virtual Tour: Eastgate Centre, Harare',
+        description: 'Video exploration of biomimicry in commercial architecture',
+        type: 'video',
+        url: '/resources/eastgate-tour.mp4'
+      }
+    ]
+  },
+  {
+    id: '2',
+    title: 'Advanced Biophilic Architecture',
+    description: 'Explore complex biophilic design strategies for large-scale architectural projects, with a focus on African contexts and sustainable approaches.',
+    instructor: 'Daniel Owiti',
+    instructorImage: 'https://i.pravatar.cc/150?img=33',
+    price: 1200,
+    isFree: false,
+    duration: '6 weeks',
+    level: 'Advanced',
+    rating: 4.9,
+    studentsCount: 87,
+    image: 'https://images.unsplash.com/photo-1518005068251-37900150dfca',
+    isLocked: true,
+    isFeatured: true,
+    tags: ['architecture', 'advanced', 'sustainable'],
+    modules: [
+      {
+        id: 'module-adv-1',
+        title: 'Biomimicry in Architecture',
+        isLocked: true,
+        lessons: [
+          {
+            id: 'lesson-adv-1-1',
+            title: 'Introduction to Biomimetic Design',
+            type: 'video',
+            duration: '25 min',
+            isLocked: true
+          },
+          {
+            id: 'lesson-adv-1-2',
+            title: 'Case Study: Termite Mound Ventilation',
+            type: 'text',
+            duration: '30 min',
+            isLocked: true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: '3',
+    title: 'Biophilic Design for Wellness Spaces',
+    description: 'Learn how to design healing environments that leverage the restorative power of nature-inspired elements in healthcare and wellness settings.',
+    instructor: 'Amina Njoki',
+    instructorImage: 'https://i.pravatar.cc/150?img=23',
+    price: 800,
+    isFree: false,
+    duration: '4 weeks',
+    level: 'Intermediate',
+    rating: 4.7,
+    studentsCount: 124,
+    image: 'https://images.unsplash.com/photo-1545566898-4a44e508aa26',
+    isLocked: true,
+    isFeatured: false,
+    tags: ['wellness', 'healthcare', 'interior-design'],
+    modules: [
+      {
+        id: 'module-well-1',
+        title: 'Healing Environments',
+        isLocked: true,
+        lessons: [
+          {
+            id: 'lesson-well-1-1',
+            title: 'Evidence-Based Design in Healthcare',
+            type: 'video',
+            duration: '20 min',
+            isLocked: true
+          }
+        ]
+      }
+    ]
+  }
+];
+
+// Mock case studies data
+const caseStudies: CaseStudy[] = [
+  {
+    id: 'case-1',
+    title: 'Eastgate Centre: Biomimicry in Zimbabwe',
+    description: 'The Eastgate Centre in Harare, Zimbabwe is a remarkable example of biomimetic architecture, drawing inspiration from termite mounds. Designed by architect Mick Pearce in collaboration with engineers at Arup Associates, the building uses passive cooling strategies observed in termite colonies.\n\nTermites maintain the temperature inside their mounds within one degree day and night, despite external temperatures ranging from 42°C to 3°C. Similarly, the Eastgate Centre uses a ventilation system that draws in cool air at night to lower the building's temperature and expels heat during the day, significantly reducing energy consumption compared to conventional air-conditioned buildings.',
+    images: [
+      'https://images.unsplash.com/photo-1518005068251-37900150dfca',
+      'https://images.unsplash.com/photo-1464195244916-405fa0a82545'
+    ],
+    tags: ['biomimicry', 'passive cooling', 'commercial architecture', 'Zimbabwe'],
+    author: 'System',
+    authorId: 'system',
+    featured: true,
+    published: true,
+    createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+  },
+  {
+    id: 'case-2',
+    title: 'Bosco Verticale: Vertical Forest Towers',
+    description: 'The Bosco Verticale (Vertical Forest) in Milan, Italy consists of two residential towers designed by Stefano Boeri Architetti. These towers host over 900 trees and thousands of plants distributed according to sun exposure on the facades.\n\nThis living facade helps mitigate air pollution, produces oxygen, and regulates temperature within the building. The vegetation also provides natural shading in summer while allowing sunlight to penetrate in winter when deciduous plants lose their leaves. Beyond environmental benefits, the constant presence of lush greenery provides psychological benefits to residents who experience a connection to nature despite living in a dense urban setting.',
+    images: [
+      'https://images.unsplash.com/photo-1545566898-4a44e508aa26',
+      'https://images.unsplash.com/photo-1451976426598-a7593bd6d0b2'
+    ],
+    tags: ['vertical forest', 'urban greening', 'residential', 'Italy'],
+    author: 'System',
+    authorId: 'system',
+    featured: false,
+    published: true,
+    createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString()
+  }
+];
+
+// Mock discussion threads
+const discussionThreads: DiscussionThread[] = [
+  {
+    id: 'thread-1',
+    courseId: '1',
+    studentId: '3',
+    studentName: 'Demo Student',
+    title: 'Question about Biophilic Materials',
+    status: 'open',
+    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    lastMessageAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    messages: [
+      {
+        id: 'msg-1',
+        threadId: 'thread-1',
+        userId: '3',
+        userName: 'Demo Student',
+        userRole: 'student',
+        content: 'Hello instructor! I\'m wondering if you could recommend some locally available materials in Kenya that would be good for biophilic design projects?',
+        createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        id: 'msg-2',
+        threadId: 'thread-1',
+        userId: '2',
+        userName: 'Jane Instructor',
+        userRole: 'instructor',
+        content: 'Great question! Kenya has a wealth of natural materials that work well for biophilic design. Consider sisal for textiles, locally quarried stone like Nairobi blue stone, sustainably harvested bamboo, and reclaimed wood. Local clay is also excellent for earth wall construction techniques.',
+        createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        id: 'msg-3',
+        threadId: 'thread-1',
+        userId: '3',
+        userName: 'Demo Student',
+        userRole: 'student',
+        content: 'Thank you for these suggestions! Do you know of any suppliers for these materials, particularly the bamboo and reclaimed wood?',
+        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        id: 'msg-4',
+        threadId: 'thread-1',
+        userId: '2',
+        userName: 'Jane Instructor',
+        userRole: 'instructor',
+        content: 'I\'ll compile a list of verified sustainable suppliers and share it as a resource in the course. For now, check out EcoBuilders Kenya for bamboo and the Reclaim Green initiative for reclaimed wood. They both have good reputations for sustainable sourcing.',
+        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+      }
+    ]
+  }
+];
+
+// Authentication Functions
+export const loginUser = (email: string, password: string) => {
+  const user = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
+  if (user) {
+    // Create a copy without the password
+    const { password, ...userWithoutPassword } = user;
+    return { ...userWithoutPassword };
+  }
+  return null;
 };
 
-export const getUserByEmail = (email: string): User | undefined => {
-  const users = getUsers();
-  return users.find(user => user.email === email);
-};
-
-export const getUserById = (id: string): User | undefined => {
-  const users = getUsers();
-  return users.find(user => user.id === id);
-};
-
-export const createUser = (userData: Omit<User, 'id' | 'enrolledCourses' | 'createdAt'>): User => {
-  const users = getUsers();
-  
+export const signupUser = (email: string, password: string, name?: string) => {
   // Check if user already exists
-  if (users.some(user => user.email === userData.email)) {
-    throw new Error('User with this email already exists');
+  if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
+    return null;
   }
   
+  // Create new user
   const newUser: User = {
-    ...userData,
-    id: crypto.randomUUID(),
+    id: generateId(),
+    email,
+    password,
+    name,
     enrolledCourses: [],
-    createdAt: new Date().toISOString()
+    completedLessons: [],
+    quizAttempts: [],
+    studyGallery: [],
+    role: 'student'
   };
   
   users.push(newUser);
-  localStorage.setItem('users', JSON.stringify(users));
   
-  return newUser;
+  // Return user without password
+  const { password: _, ...userWithoutPassword } = newUser;
+  return { ...userWithoutPassword };
 };
 
-export const authenticateUser = (email: string, password: string): User | null => {
-  const user = getUserByEmail(email);
+// Course Functions
+export const getCourses = () => {
+  return courses;
+};
+
+export const getCourseById = (id: string) => {
+  return courses.find(course => course.id === id) || null;
+};
+
+export const enrollUserInCourse = (userId: string, courseId: string) => {
+  const user = users.find(u => u.id === userId);
+  const course = courses.find(c => c.id === courseId);
   
-  if (user && user.password === password) {
-    return user;
+  if (!user || !course) {
+    return false;
+  }
+  
+  // Check if already enrolled
+  if (user.enrolledCourses.includes(courseId)) {
+    return false;
+  }
+  
+  // Enroll user
+  user.enrolledCourses.push(courseId);
+  return true;
+};
+
+// Lesson and Module Functions
+export const getLessonById = (id: string) => {
+  for (const course of courses) {
+    for (const module of course.modules) {
+      const lesson = module.lessons.find(l => l.id === id);
+      if (lesson) {
+        return lesson;
+      }
+    }
+  }
+  return null;
+};
+
+export const getModuleByLessonId = (lessonId: string) => {
+  for (const course of courses) {
+    for (const module of course.modules) {
+      if (module.lessons.some(l => l.id === lessonId)) {
+        return module;
+      }
+    }
+  }
+  return null;
+};
+
+export const getNextLesson = (courseId: string, currentLessonId: string) => {
+  const course = getCourseById(courseId);
+  if (!course) return null;
+  
+  let foundCurrent = false;
+  let nextLesson = null;
+  
+  for (const module of course.modules) {
+    for (let i = 0; i < module.lessons.length; i++) {
+      if (foundCurrent) {
+        nextLesson = module.lessons[i];
+        return nextLesson;
+      }
+      
+      if (module.lessons[i].id === currentLessonId) {
+        foundCurrent = true;
+        if (i < module.lessons.length - 1) {
+          nextLesson = module.lessons[i + 1];
+          return nextLesson;
+        }
+      }
+    }
   }
   
   return null;
 };
 
-// Course related functions
-export const getCourses = (): Course[] => {
-  return JSON.parse(localStorage.getItem('courses') || '[]');
-};
-
-export const getCourseById = (id: string): Course | undefined => {
-  const courses = getCourses();
-  return courses.find(course => course.id === id);
-};
-
-export const enrollUserInCourse = (userId: string, courseId: string): boolean => {
-  const users = getUsers();
-  const userIndex = users.findIndex(user => user.id === userId);
-  
-  if (userIndex === -1) {
-    return false;
-  }
-  
-  // Check if course exists
+export const getPreviousLesson = (courseId: string, currentLessonId: string) => {
   const course = getCourseById(courseId);
-  if (!course) {
-    return false;
+  if (!course) return null;
+  
+  let previousLesson = null;
+  
+  for (const module of course.modules) {
+    for (let i = 0; i < module.lessons.length; i++) {
+      if (module.lessons[i].id === currentLessonId) {
+        if (i > 0) {
+          return module.lessons[i - 1];
+        } else if (module !== course.modules[0]) {
+          // Try to get the last lesson of the previous module
+          const moduleIndex = course.modules.indexOf(module);
+          const prevModule = course.modules[moduleIndex - 1];
+          return prevModule.lessons[prevModule.lessons.length - 1];
+        }
+        return null;
+      }
+      previousLesson = module.lessons[i];
+    }
   }
   
-  // Check if user is already enrolled
-  if (users[userIndex].enrolledCourses.includes(courseId)) {
-    return false;
-  }
-  
-  // Enroll user
-  users[userIndex].enrolledCourses.push(courseId);
-  localStorage.setItem('users', JSON.stringify(users));
-  
-  return true;
+  return null;
 };
 
-export const getUserEnrolledCourses = (userId: string): Course[] => {
-  const user = getUserById(userId);
-  if (!user) {
-    return [];
-  }
+export const isLessonCompleted = (userId: string, lessonId: string) => {
+  const user = users.find(u => u.id === userId);
+  if (!user) return false;
   
-  const allCourses = getCourses();
-  return allCourses.filter(course => user.enrolledCourses.includes(course.id));
+  return user.completedLessons.includes(lessonId);
 };
 
-// New functions for handling lessons, badges, certificates and quizzes
-export const markLessonAsCompleted = (userId: string, lessonId: string): boolean => {
-  const users = getUsers();
-  const userIndex = users.findIndex(user => user.id === userId);
+export const markLessonAsCompleted = (userId: string, lessonId: string) => {
+  const user = users.find(u => u.id === userId);
+  if (!user) return false;
   
-  if (userIndex === -1) {
-    return false;
-  }
-  
-  if (!users[userIndex].completedLessons.includes(lessonId)) {
-    users[userIndex].completedLessons.push(lessonId);
-    localStorage.setItem('users', JSON.stringify(users));
-    
-    // After completing a lesson, check if we need to unlock new modules or lessons
-    unlockNextLessons(userId);
+  if (!user.completedLessons.includes(lessonId)) {
+    user.completedLessons.push(lessonId);
   }
   
   return true;
 };
 
-export const isLessonCompleted = (userId: string | undefined, lessonId: string): boolean => {
-  // If userId is undefined or null, return false
-  if (!userId) return false;
+// Quiz Functions
+export const saveQuizAttempt = (userId: string, quizId: string, score: number, totalQuestions: number) => {
+  const user = users.find(u => u.id === userId);
+  if (!user) return false;
   
-  const user = getUserById(userId);
-  // Check if user exists and has completedLessons property before using includes
-  return user?.completedLessons?.includes(lessonId) || false;
-};
-
-export const saveQuizAttempt = (userId: string, quizId: string, score: number, totalQuestions: number): boolean => {
-  const users = getUsers();
-  const userIndex = users.findIndex(user => user.id === userId);
+  const passingScore = 0.6; // 60% passing threshold
+  const passed = score / totalQuestions >= passingScore;
   
-  if (userIndex === -1) {
-    return false;
-  }
-  
-  const quizAttempt: QuizAttempt = {
-    id: crypto.randomUUID(),
+  const attempt: QuizAttempt = {
     quizId,
     score,
     totalQuestions,
-    completedAt: new Date().toISOString()
+    passed,
+    date: new Date().toISOString()
   };
   
-  users[userIndex].completedQuizzes.push(quizAttempt);
-  localStorage.setItem('users', JSON.stringify(users));
-  
+  user.quizAttempts.push(attempt);
   return true;
 };
 
-export const awardBadgeToUser = (userId: string, badge: Omit<Badge, 'id' | 'dateEarned'>): boolean => {
-  const users = getUsers();
-  const userIndex = users.findIndex(user => user.id === userId);
+// Study Gallery Functions
+interface StudyNoteInput {
+  title: string;
+  content: string;
+  type: 'image' | 'note' | 'voice';
+  moduleId?: string;
+  moduleName?: string;
+  courseId?: string;
+  lessonId?: string;
+}
+
+export const addStudyNote = (userId: string, note: StudyNoteInput) => {
+  const user = users.find(u => u.id === userId);
+  if (!user) return false;
   
-  if (userIndex === -1) {
-    return false;
-  }
-  
-  const newBadge: Badge = {
-    ...badge,
-    id: crypto.randomUUID(),
-    dateEarned: new Date().toISOString()
+  const studyItem: StudyItem = {
+    id: generateId(),
+    title: note.title,
+    content: note.content,
+    type: note.type,
+    createdAt: new Date().toISOString(),
+    moduleId: note.moduleId,
+    moduleName: note.moduleName,
+    courseId: note.courseId,
+    lessonId: note.lessonId
   };
   
-  users[userIndex].badges.push(newBadge);
-  localStorage.setItem('users', JSON.stringify(users));
+  user.studyGallery.push(studyItem);
+  return studyItem.id;
+};
+
+export const getStudyGallery = (userId: string) => {
+  const user = users.find(u => u.id === userId);
+  if (!user) return [];
   
+  return user.studyGallery;
+};
+
+export const deleteStudyItem = (userId: string, itemId: string) => {
+  const user = users.find(u => u.id === userId);
+  if (!user) return false;
+  
+  const itemIndex = user.studyGallery.findIndex(item => item.id === itemId);
+  if (itemIndex === -1) return false;
+  
+  user.studyGallery.splice(itemIndex, 1);
   return true;
 };
 
-export const issueCertificate = (userId: string, courseId: string): boolean => {
-  const users = getUsers();
-  const userIndex = users.findIndex(user => user.id === userId);
-  
-  if (userIndex === -1) {
-    return false;
-  }
-  
-  const course = getCourseById(courseId);
-  if (!course) {
-    return false;
-  }
-  
-  // Check if user already has this certificate
-  if (users[userIndex].certificates.some(cert => cert.courseId === courseId)) {
-    return false;
-  }
-  
-  const certificate: Certificate = {
-    id: crypto.randomUUID(),
-    courseId,
-    courseTitle: course.title,
-    issueDate: new Date().toISOString(),
-    completionDate: new Date().toISOString()
+// Case Study Functions
+export const getCaseStudies = () => {
+  return caseStudies;
+};
+
+export const getCaseStudyById = (id: string) => {
+  return caseStudies.find(study => study.id === id) || null;
+};
+
+interface CaseStudyInput {
+  title: string;
+  description: string;
+  images: string[];
+  tags: string[];
+  author: string;
+  authorId: string;
+}
+
+export const addCaseStudy = (study: CaseStudyInput) => {
+  const newCaseStudy: CaseStudy = {
+    id: generateId(),
+    title: study.title,
+    description: study.description,
+    images: study.images,
+    tags: study.tags,
+    author: study.author,
+    authorId: study.authorId,
+    featured: false,
+    published: false, // Requires instructor approval
+    createdAt: new Date().toISOString()
   };
   
-  users[userIndex].certificates.push(certificate);
-  localStorage.setItem('users', JSON.stringify(users));
+  caseStudies.push(newCaseStudy);
+  return newCaseStudy.id;
+};
+
+export const publishCaseStudy = (studyId: string, shouldPublish: boolean = true) => {
+  const study = caseStudies.find(s => s.id === studyId);
+  if (!study) return false;
   
+  study.published = shouldPublish;
   return true;
 };
 
-// New function to unlock next lessons based on completion
-export const unlockNextLessons = (userId: string): void => {
-  const user = getUserById(userId);
-  if (!user) return;
+// Discussion Functions
+export const getCourseDiscussions = (courseId: string) => {
+  return discussionThreads.filter(thread => thread.courseId === courseId);
+};
+
+interface ThreadInput {
+  courseId: string;
+  studentId: string;
+  studentName: string;
+  title: string;
+  message: string;
+}
+
+export const createDiscussionThread = (input: ThreadInput) => {
+  const threadId = generateId();
+  const timestamp = new Date().toISOString();
   
-  const courses = getCourses();
-  let hasChanges = false;
-  
-  // For each course the user is enrolled in
-  user.enrolledCourses.forEach(courseId => {
-    const courseIndex = courses.findIndex(course => course.id === courseId);
-    if (courseIndex === -1) return;
-    
-    const course = courses[courseIndex];
-    
-    // Process each module
-    for (let i = 0; i < course.modules.length; i++) {
-      const module = course.modules[i];
-      
-      // First module is always unlocked for enrolled users
-      if (i === 0) {
-        if (module.isLocked) {
-          module.isLocked = false;
-          module.lessons[0].isLocked = false; // First lesson is always unlocked
-          hasChanges = true;
-        }
-      } 
-      // For subsequent modules, check if previous module has enough completed lessons
-      else {
-        const previousModule = course.modules[i-1];
-        const previousModuleLessons = previousModule.lessons;
-        const completedLessonsInPreviousModule = previousModuleLessons.filter(
-          lesson => user.completedLessons.includes(lesson.id)
-        ).length;
-        
-        // If user completed at least half of the previous module's lessons
-        if (completedLessonsInPreviousModule >= Math.ceil(previousModuleLessons.length / 2)) {
-          if (module.isLocked) {
-            module.isLocked = false;
-            module.lessons[0].isLocked = false; // First lesson of the newly unlocked module
-            hasChanges = true;
-          }
-        }
+  const newThread: DiscussionThread = {
+    id: threadId,
+    courseId: input.courseId,
+    studentId: input.studentId,
+    studentName: input.studentName,
+    title: input.title,
+    status: 'open',
+    createdAt: timestamp,
+    lastMessageAt: timestamp,
+    messages: [
+      {
+        id: generateId(),
+        threadId: threadId,
+        userId: input.studentId,
+        userName: input.studentName,
+        userRole: 'student',
+        content: input.message,
+        createdAt: timestamp
       }
-      
-      // For each module, unlock subsequent lessons based on completed lessons
-      if (!module.isLocked) {
-        for (let j = 0; j < module.lessons.length - 1; j++) {
-          const currentLesson = module.lessons[j];
-          const nextLesson = module.lessons[j + 1];
-          
-          if (user.completedLessons.includes(currentLesson.id) && nextLesson.isLocked) {
-            nextLesson.isLocked = false;
-            hasChanges = true;
-          }
-        }
-      }
-    }
-  });
+    ]
+  };
   
-  if (hasChanges) {
-    localStorage.setItem('courses', JSON.stringify(courses));
-  }
+  discussionThreads.push(newThread);
+  return threadId;
+};
+
+interface MessageInput {
+  threadId: string;
+  userId: string;
+  userName: string;
+  userRole: 'student' | 'instructor';
+  content: string;
+}
+
+export const addDiscussionMessage = (input: MessageInput) => {
+  const thread = discussionThreads.find(t => t.id === input.threadId);
+  if (!thread) return false;
+  
+  const timestamp = new Date().toISOString();
+  
+  const message: DiscussionMessage = {
+    id: generateId(),
+    threadId: input.threadId,
+    userId: input.userId,
+    userName: input.userName,
+    userRole: input.userRole,
+    content: input.content,
+    createdAt: timestamp
+  };
+  
+  thread.messages.push(message);
+  thread.lastMessageAt = timestamp;
+  
+  return message.id;
 };

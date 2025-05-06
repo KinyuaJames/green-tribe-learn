@@ -15,6 +15,7 @@ import ResourceVault from '@/components/ResourceVault';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { CheckCircle, Lock, AlertTriangle } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
 
 const CourseDetail = () => {
   const { courseId } = useParams();
@@ -104,7 +105,8 @@ const CourseDetail = () => {
       return;
     }
     
-    setSelectedLesson(lessonId);
+    // Navigate to the lesson page instead of showing modal
+    navigate(`/course/${course.id}/lesson/${lessonId}`);
     
     // Mark lesson as completed when user views it
     if (currentUser) {
@@ -194,7 +196,7 @@ const CourseDetail = () => {
                       </Button>
                     </Link>
                   ) : isPaidAndLocked ? (
-                    <Alert variant="warning" className="mb-4">
+                    <Alert variant="default" className="mb-4 border-yellow-500">
                       <AlertTriangle className="h-4 w-4 mr-2" />
                       <AlertTitle>Payment Features Coming Soon</AlertTitle>
                       <AlertDescription>
@@ -243,6 +245,7 @@ const CourseDetail = () => {
               <TabsTrigger value="curriculum">Curriculum</TabsTrigger>
               <TabsTrigger value="resources">Resources</TabsTrigger>
               <TabsTrigger value="instructor">Instructor</TabsTrigger>
+              <TabsTrigger value="discussion">Discussion</TabsTrigger>
               <TabsTrigger value="reviews">Reviews</TabsTrigger>
             </TabsList>
             
@@ -251,67 +254,84 @@ const CourseDetail = () => {
                 <h2 className="text-2xl font-semibold text-biophilic-earth mb-6">Course Content</h2>
                 
                 <div className="space-y-6">
-                  {course.modules.map((module, index) => (
-                    <div key={module.id} className="border rounded-md overflow-hidden">
-                      <div className="bg-muted p-4 flex justify-between items-center">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-medium">
-                            Module {index + 1}: {module.title}
-                          </h3>
-                          {module.isLocked && (
-                            <Lock className="h-4 w-4 text-muted-foreground" />
-                          )}
+                  {course.modules.map((module, moduleIndex) => {
+                    // Calculate if this module should be locked
+                    // First module is always unlocked for enrolled users
+                    const isModuleLocked = moduleIndex > 0 && isEnrolled ? 
+                      !course.modules[moduleIndex - 1].lessons.every(prevLesson => 
+                        currentUser && isLessonCompleted(currentUser.id, prevLesson.id)
+                      ) : module.isLocked;
+                    
+                    return (
+                      <div key={module.id} className="border rounded-md overflow-hidden">
+                        <div className="bg-muted p-4 flex justify-between items-center">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-medium">
+                              Module {moduleIndex + 1}: {module.title}
+                            </h3>
+                            {isModuleLocked && !isEnrolled && (
+                              <Lock className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </div>
+                          <span className="text-sm text-muted-foreground">
+                            {module.lessons.length} lessons
+                          </span>
                         </div>
-                        <span className="text-sm text-muted-foreground">
-                          {module.lessons.length} lessons
-                        </span>
-                      </div>
-                      
-                      <div className="divide-y">
-                        {module.lessons.map((lesson) => {
-                          // Safely check if lesson is completed - handles null currentUser
-                          const isCompleted = currentUser ? isLessonCompleted(currentUser.id, lesson.id) : false;
-                          
-                          return (
-                            <div key={lesson.id} className="p-4 flex justify-between items-center">
-                              <div className="flex items-center">
-                                {isCompleted && (
-                                  <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                                )}
-                                {lesson.isLocked && (
-                                  <Lock className="h-5 w-5 text-muted-foreground mr-2" />
-                                )}
-                                <div>
-                                  <p className="font-medium">{lesson.title}</p>
-                                  <p className="text-sm text-muted-foreground">
-                                    {lesson.type.charAt(0).toUpperCase() + lesson.type.slice(1)}
-                                    {lesson.duration && ` • ${lesson.duration}`}
-                                  </p>
+                        
+                        <div className="divide-y">
+                          {module.lessons.map((lesson, lessonIndex) => {
+                            // Calculate if this lesson should be locked
+                            // First lesson in first module is always unlocked for enrolled users
+                            const isLessonLocked = moduleIndex === 0 && lessonIndex === 0 ? false : 
+                              moduleIndex > 0 ? isModuleLocked : 
+                              lessonIndex > 0 && isEnrolled ? 
+                                !isLessonCompleted(currentUser?.id || '', module.lessons[lessonIndex - 1].id) : 
+                                lesson.isLocked;
+                            
+                            // Safely check if lesson is completed - handles null currentUser
+                            const isCompleted = currentUser ? isLessonCompleted(currentUser.id, lesson.id) : false;
+                            
+                            return (
+                              <div key={lesson.id} className="p-4 flex justify-between items-center">
+                                <div className="flex items-center">
+                                  {isCompleted && (
+                                    <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
+                                  )}
+                                  {isLessonLocked && (
+                                    <Lock className="h-5 w-5 text-muted-foreground mr-2" />
+                                  )}
+                                  <div>
+                                    <p className="font-medium">{lesson.title}</p>
+                                    <p className="text-sm text-muted-foreground">
+                                      {lesson.type.charAt(0).toUpperCase() + lesson.type.slice(1)}
+                                      {lesson.duration && ` • ${lesson.duration}`}
+                                    </p>
+                                  </div>
                                 </div>
+                                
+                                {isEnrolled ? (
+                                  <Button 
+                                    size="sm" 
+                                    variant={isLessonLocked ? "outline" : "outline"}
+                                    onClick={() => handleLessonClick(lesson.id, isLessonLocked)}
+                                    disabled={isPaidAndLocked}
+                                    className={isLessonLocked ? "text-muted-foreground" : ""}
+                                  >
+                                    {isCompleted ? "Review" : isLessonLocked ? "Locked" : "Start"}
+                                  </Button>
+                                ) : (
+                                  <div className="flex items-center text-muted-foreground">
+                                    <Lock className="h-4 w-4 mr-1" />
+                                    <span className="text-sm">Locked</span>
+                                  </div>
+                                )}
                               </div>
-                              
-                              {isEnrolled ? (
-                                <Button 
-                                  size="sm" 
-                                  variant={lesson.isLocked ? "outline" : "outline"}
-                                  onClick={() => handleLessonClick(lesson.id, lesson.isLocked)}
-                                  disabled={isPaidAndLocked}
-                                  className={lesson.isLocked ? "text-muted-foreground" : ""}
-                                >
-                                  {isCompleted ? "Review" : lesson.isLocked ? "Locked" : "Start"}
-                                </Button>
-                              ) : (
-                                <div className="flex items-center text-muted-foreground">
-                                  <Lock className="h-4 w-4 mr-1" />
-                                  <span className="text-sm">Locked</span>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </TabsContent>
@@ -347,6 +367,29 @@ const CourseDetail = () => {
               </div>
             </TabsContent>
             
+            <TabsContent value="discussion">
+              <div className="bg-white rounded-lg shadow-sm border border-border p-6">
+                <h2 className="text-2xl font-semibold text-biophilic-earth mb-6">Discussion with Instructor</h2>
+                
+                {!isEnrolled ? (
+                  <div className="text-center py-10">
+                    <p className="text-muted-foreground mb-4">
+                      Enroll in this course to join discussions with the instructor.
+                    </p>
+                    <Button onClick={handleEnroll} disabled={isEnrolling || isPaidAndLocked}>
+                      {isEnrolling ? 'Processing...' : 'Enroll Now'}
+                    </Button>
+                  </div>
+                ) : (
+                  <Link to={`/course/${course.id}/discussion`}>
+                    <Button variant="outline" className="w-full">
+                      View or Start Discussion Thread
+                    </Button>
+                  </Link>
+                )}
+              </div>
+            </TabsContent>
+            
             <TabsContent value="reviews">
               <div className="bg-white rounded-lg shadow-sm border border-border p-6">
                 <h2 className="text-2xl font-semibold text-biophilic-earth mb-6">Student Reviews</h2>
@@ -376,91 +419,6 @@ const CourseDetail = () => {
           </Tabs>
         </div>
       </main>
-      
-      {/* Lesson Modal */}
-      {selectedLesson && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-auto">
-            {(() => {
-              let lesson;
-              let moduleTitle = '';
-              
-              for (const module of course.modules) {
-                const found = module.lessons.find(l => l.id === selectedLesson);
-                if (found) {
-                  lesson = found;
-                  moduleTitle = module.title;
-                  break;
-                }
-              }
-              
-              if (!lesson) return null;
-              
-              return (
-                <>
-                  <div className="p-4 border-b flex justify-between items-center">
-                    <div>
-                      <p className="text-sm text-muted-foreground">{moduleTitle}</p>
-                      <h3 className="font-medium">{lesson.title}</h3>
-                    </div>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => setSelectedLesson(null)}
-                    >
-                      ✕
-                    </Button>
-                  </div>
-                  
-                  <div className="p-6">
-                    {lesson.type === 'video' ? (
-                      <div className="aspect-video bg-muted flex items-center justify-center mb-6">
-                        <p>Video Placeholder</p>
-                      </div>
-                    ) : null}
-                    
-                    {lesson.content && lesson.type !== 'quiz' && (
-                      <div className="prose max-w-none mb-6">
-                        <p>{lesson.content}</p>
-                      </div>
-                    )}
-                    
-                    {lesson.type === 'quiz' && lesson.quiz && currentUser && (
-                      <Quiz 
-                        quiz={lesson.quiz} 
-                        courseId={course.id}
-                        onComplete={handleQuizComplete}
-                      />
-                    )}
-                    
-                    {lesson.type === 'assignment' && (
-                      <div className="mt-8">
-                        <h4 className="font-medium mb-4">Submit Your Response</h4>
-                        
-                        <VoiceRecorder 
-                          onRecordingComplete={handleVoiceSubmission} 
-                          maxDuration={180}
-                          showSubmitButton={true}
-                        />
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="p-4 border-t flex justify-between">
-                    <Button variant="outline">Previous Lesson</Button>
-                    <Button variant="outline" onClick={() => setSelectedLesson(null)}>
-                      Close
-                    </Button>
-                    <Button className="bg-biophilic-earth hover:bg-biophilic-earth/90">
-                      Next Lesson
-                    </Button>
-                  </div>
-                </>
-              );
-            })()}
-          </div>
-        </div>
-      )}
       
       <Footer />
     </div>

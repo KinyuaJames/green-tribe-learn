@@ -8,6 +8,10 @@ import { AuthProvider } from "./contexts/AuthContext";
 import Index from "./pages/Index";
 import Courses from "./pages/Courses";
 import CourseDetail from "./pages/CourseDetail";
+import LessonDetail from "./pages/LessonDetail";
+import CourseDiscussion from "./pages/CourseDiscussion";
+import CaseStudyGallery from "./pages/CaseStudyGallery";
+import CaseStudyDetail from "./pages/CaseStudyDetail";
 import Tribe from "./pages/Tribe";
 import About from "./pages/About";
 import Login from "./pages/Login";
@@ -32,6 +36,10 @@ const App = () => {
               <Route path="/" element={<Index />} />
               <Route path="/courses" element={<Courses />} />
               <Route path="/course/:courseId" element={<CourseDetail />} />
+              <Route path="/course/:courseId/lesson/:lessonId" element={<LessonDetail />} />
+              <Route path="/course/:courseId/discussion" element={<CourseDiscussion />} />
+              <Route path="/case-studies" element={<CaseStudyGallery />} />
+              <Route path="/case-study/:caseStudyId" element={<CaseStudyDetail />} />
               <Route path="/tribe" element={<Tribe />} />
               <Route path="/about" element={<About />} />
               <Route path="/login" element={<Login />} />
