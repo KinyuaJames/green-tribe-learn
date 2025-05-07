@@ -2,18 +2,41 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Menu, X, LogOut, User } from 'lucide-react';
+import { Menu, X, LogOut, User, MapPin } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { currentUser, logout } = useAuth();
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const { currentUser, login, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
     setIsOpen(false);
     navigate('/login');
+  };
+  
+  const handleQuickLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      await login(email, password);
+      setShowLoginDialog(false);
+      toast.success('Successfully logged in');
+    } catch (error) {
+      toast.error('Login failed. Check your credentials and try again.');
+    }
   };
 
   return (
@@ -52,6 +75,10 @@ const Navbar = () => {
           <Link to="/case-studies" className="text-foreground hover:text-biophilic-earth transition-colors">
             Case Studies
           </Link>
+          <Link to="/indigenous-map" className="text-foreground hover:text-biophilic-earth transition-colors flex items-center gap-1">
+            <MapPin size={16} />
+            Indigenous Map
+          </Link>
           <Link to="/tribe" className="text-foreground hover:text-biophilic-earth transition-colors">
             Biophilic Tribe
           </Link>
@@ -70,11 +97,9 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              <Link to="/login">
-                <Button variant="outline" className="border-biophilic-earth text-biophilic-earth hover:bg-biophilic-earth hover:text-white">
-                  Log In
-                </Button>
-              </Link>
+              <Button variant="outline" onClick={() => setShowLoginDialog(true)} className="border-biophilic-earth text-biophilic-earth hover:bg-biophilic-earth hover:text-white">
+                Log In
+              </Button>
               <Link to="/signup">
                 <Button className="bg-biophilic-earth hover:bg-biophilic-earth/90 text-white">
                   Sign Up
@@ -111,6 +136,14 @@ const Navbar = () => {
               Case Studies
             </Link>
             <Link 
+              to="/indigenous-map" 
+              className="text-foreground hover:text-biophilic-earth transition-colors px-2 py-2 flex items-center gap-1"
+              onClick={() => setIsOpen(false)}
+            >
+              <MapPin size={16} />
+              Indigenous Map
+            </Link>
+            <Link 
               to="/tribe" 
               className="text-foreground hover:text-biophilic-earth transition-colors px-2 py-2"
               onClick={() => setIsOpen(false)}
@@ -144,11 +177,16 @@ const Navbar = () => {
               </>
             ) : (
               <div className="flex flex-col gap-2 pt-2">
-                <Link to="/login" onClick={() => setIsOpen(false)}>
-                  <Button variant="outline" className="w-full border-biophilic-earth text-biophilic-earth hover:bg-biophilic-earth hover:text-white">
-                    Log In
-                  </Button>
-                </Link>
+                <Button 
+                  variant="outline" 
+                  className="w-full border-biophilic-earth text-biophilic-earth hover:bg-biophilic-earth hover:text-white"
+                  onClick={() => {
+                    setIsOpen(false);
+                    setShowLoginDialog(true);
+                  }}
+                >
+                  Log In
+                </Button>
                 <Link to="/signup" onClick={() => setIsOpen(false)}>
                   <Button className="w-full bg-biophilic-earth hover:bg-biophilic-earth/90 text-white">
                     Sign Up
@@ -159,6 +197,56 @@ const Navbar = () => {
           </div>
         </div>
       )}
+
+      {/* Quick Login Dialog */}
+      <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Log In</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleQuickLogin} className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <label htmlFor="email" className="text-sm font-medium">Email</label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="password" className="text-sm font-medium">Password</label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <div className="flex justify-between items-center pt-2">
+              <Button 
+                type="button" 
+                variant="ghost" 
+                onClick={() => {
+                  setShowLoginDialog(false);
+                  navigate('/signup');
+                }}
+              >
+                Create account
+              </Button>
+              <Button 
+                type="submit" 
+                className="bg-biophilic-earth hover:bg-biophilic-earth/90 text-white"
+              >
+                Log In
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </nav>
   );
 };

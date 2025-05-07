@@ -14,6 +14,27 @@ import { getCaseStudyById } from '@/utils/database';
 import ImageWithFallback from '@/components/ImageWithFallback';
 import MasonryGallery from '@/components/MasonryGallery';
 
+// Generate dummy images if we don't have enough (minimum 9)
+const generateDummyImages = (baseImages: string[], minCount: number = 9) => {
+  if (!baseImages || baseImages.length === 0) {
+    return Array(minCount).fill('/assets/fallback-image.jpg');
+  }
+  
+  if (baseImages.length >= minCount) {
+    return baseImages;
+  }
+  
+  // Create a circular array by repeating the images until we have at least minCount
+  const result = [];
+  let index = 0;
+  while (result.length < minCount) {
+    result.push(baseImages[index % baseImages.length]);
+    index++;
+  }
+  
+  return result;
+};
+
 const CaseStudyDetail = () => {
   const { caseStudyId } = useParams();
   const caseStudy = getCaseStudyById(caseStudyId || '');
@@ -35,6 +56,9 @@ const CaseStudyDetail = () => {
       </div>
     );
   }
+  
+  // Prepare gallery images with minimum count
+  const galleryImages = generateDummyImages(caseStudy.images, 9);
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -64,8 +88,8 @@ const CaseStudyDetail = () => {
               <div className="aspect-video mb-8 rounded-lg overflow-hidden">
                 <ImageWithFallback 
                   src={caseStudy.images[0]} 
-                  fallbackSrc1={caseStudy.images[1] || caseStudy.images[0]} 
-                  fallbackSrc2="/placeholder.svg"
+                  fallbackSrc1={caseStudy.images[1] || ''} 
+                  defaultFallback="/assets/fallback-image.jpg"
                   alt={caseStudy.title}
                   className="w-full h-full object-cover"
                 />
@@ -89,7 +113,7 @@ const CaseStudyDetail = () => {
                 </TabsContent>
                 
                 <TabsContent value="gallery" className="mt-6">
-                  <MasonryGallery images={caseStudy.images} columnCount={2} />
+                  <MasonryGallery images={galleryImages} columnCount={3} />
                 </TabsContent>
                 
                 <TabsContent value="insights" className="mt-6">

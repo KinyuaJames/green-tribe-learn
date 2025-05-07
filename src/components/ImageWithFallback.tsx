@@ -10,7 +10,7 @@ interface ImageWithFallbackProps extends React.ImgHTMLAttributes<HTMLImageElemen
   className?: string;
 }
 
-const defaultPlaceholder = "/placeholder.svg";
+const defaultPlaceholder = "/assets/fallback-image.jpg";
 
 const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
   src,

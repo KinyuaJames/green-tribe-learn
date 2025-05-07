@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -7,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import ImageWithFallback from './ImageWithFallback';
 
-// Mapbox token
+// Mapbox token - we're using a constant here for reliability
 const MAPBOX_TOKEN = 'pk.eyJ1Ijoiamlta20iLCJhIjoiY21hZTloMDE3MDR5ZTJxczU5b2Y2Z2QwNSJ9.e_f21CLkuIeY6fLQ4fuSkA';
 
 // Tribal design data
@@ -134,14 +133,13 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ mapboxToken }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [selectedTribe, setSelectedTribe] = useState<typeof tribalDesigns[0] | null>(null);
-  const [isMapTokenDialogOpen, setIsMapTokenDialogOpen] = useState<boolean>(false);
-  const [userMapToken, setUserMapToken] = useState<string>(mapboxToken || '');
-  const [activeMapToken, setActiveMapToken] = useState<string>(mapboxToken || MAPBOX_TOKEN);
+  const [mapReady, setMapReady] = useState<boolean>(false);
   
-  // Initialize map when container is available and token is set
+  // Initialize map when container is available
   useEffect(() => {
-    if (mapContainer.current && activeMapToken) {
-      mapboxgl.accessToken = activeMapToken;
+    if (mapContainer.current && !map.current) {
+      // Set the access token directly
+      mapboxgl.accessToken = MAPBOX_TOKEN;
       
       try {
         map.current = new mapboxgl.Map({
@@ -156,36 +154,48 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ mapboxToken }) => {
         
         // Add atmosphere and terrain
         map.current.on('style.load', () => {
-          map.current?.setFog({
-            color: 'rgb(255, 255, 255)',
-            'high-color': 'rgb(200, 200, 225)',
-            'horizon-blend': 0.2,
-          });
+          if (map.current) {
+            map.current.setFog({
+              color: 'rgb(255, 255, 255)',
+              'high-color': 'rgb(200, 200, 225)',
+              'horizon-blend': 0.2,
+            });
+            setMapReady(true);
+          }
         });
 
         // Add markers for each tribal design
-        tribalDesigns.forEach(tribe => {
-          const marker = document.createElement('div');
-          marker.className = 'cursor-pointer w-6 h-6 rounded-full bg-biophilic-earth border-2 border-white flex items-center justify-center text-white hover:bg-biophilic-clay transition-colors';
+        map.current.on('load', () => {
+          if (!map.current) return;
           
-          // Create a new marker with the coordinates as a tuple to satisfy TypeScript
-          new mapboxgl.Marker(marker)
-            .setLngLat([tribe.location[0], tribe.location[1]] as [number, number])
-            .setPopup(
-              new mapboxgl.Popup({ offset: 25 })
-                .setHTML(`<strong>${tribe.name}</strong><br>${tribe.country}`)
-            )
-            .addTo(map.current!);
+          tribalDesigns.forEach(tribe => {
+            const marker = document.createElement('div');
+            marker.className = 'cursor-pointer w-6 h-6 rounded-full bg-biophilic-earth border-2 border-white flex items-center justify-center text-white hover:bg-biophilic-clay transition-colors';
             
-          // Add click listener to the marker
-          marker.addEventListener('click', () => {
-            setSelectedTribe(tribe);
+            // Create a new marker
+            new mapboxgl.Marker(marker)
+              .setLngLat([tribe.location[0], tribe.location[1]])
+              .setPopup(
+                new mapboxgl.Popup({ offset: 25 })
+                  .setHTML(`<strong>${tribe.name}</strong><br>${tribe.country}`)
+              )
+              .addTo(map.current!);
+              
+            // Add click listener to the marker
+            marker.addEventListener('click', () => {
+              setSelectedTribe(tribe);
+            });
           });
         });
+        
+        // Trigger map resize to ensure it renders properly
+        setTimeout(() => {
+          if (map.current) {
+            map.current.resize();
+          }
+        }, 200);
       } catch (error) {
         console.error("Error initializing map:", error);
-        // Reset token if there's an error
-        setIsMapTokenDialogOpen(true);
       }
     }
     
@@ -193,87 +203,42 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ mapboxToken }) => {
     return () => {
       if (map.current) {
         map.current.remove();
+        map.current = null;
       }
     };
-  }, [activeMapToken]);
-  
-  // Handle token submission from dialog (rarely needed since we now have a default token)
-  const handleTokenSubmit = () => {
-    if (userMapToken) {
-      setActiveMapToken(userMapToken);
-      setIsMapTokenDialogOpen(false);
-    }
-  };
+  }, []);
   
   return (
     <div className="relative w-full min-h-[70vh] bg-muted/20">
-      {/* Map Token Dialog - only shown if there's an issue with the default token */}
-      <Dialog open={isMapTokenDialogOpen} onOpenChange={setIsMapTokenDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Mapbox API Token Required</DialogTitle>
-            <DialogDescription>
-              Please enter your Mapbox public token to enable the interactive map.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              You can find this in your Mapbox account dashboard.
-            </p>
-            <input
-              type="text"
-              value={userMapToken}
-              onChange={(e) => setUserMapToken(e.target.value)}
-              placeholder="Enter your Mapbox token"
-              className="w-full px-3 py-2 border rounded-md"
-            />
-            <Button onClick={handleTokenSubmit} className="w-full">
-              Apply Token
-            </Button>
-            <p className="text-xs text-muted-foreground">
-              Visit <a href="https://account.mapbox.com/" target="_blank" rel="noopener noreferrer" className="text-primary underline">
-                mapbox.com
-              </a> to create an account and get your free token.
-            </p>
-          </div>
-        </DialogContent>
-      </Dialog>
-
       {/* Map Container */}
       <div 
         ref={mapContainer} 
         className="w-full h-[70vh] rounded-lg shadow-lg"
-        style={{ display: activeMapToken ? 'block' : 'none' }}
+        style={{ opacity: mapReady ? 1 : 0.7 }} // Visual indication that map is loading
       />
-      
-      {/* No Token Warning - unlikely to be shown now */}
-      {!activeMapToken && (
-        <div className="absolute inset-0 flex items-center justify-center bg-muted/10 rounded-lg">
-          <Card className="w-full max-w-md">
-            <CardContent className="pt-6 space-y-4 text-center">
-              <h3 className="text-lg font-medium">Map Requires API Token</h3>
-              <p className="text-sm text-muted-foreground">
-                Please provide a Mapbox token to view the interactive map.
-              </p>
-              <Button onClick={() => setIsMapTokenDialogOpen(true)}>
-                Enter API Token
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      )}
       
       {/* Selected Tribe Information */}
       {selectedTribe && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setSelectedTribe(null)}>
-          <div className="bg-background rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4" 
+          onClick={() => setSelectedTribe(null)}
+          style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.3)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)'
+          }}
+        >
+          <div 
+            className="bg-background rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto" 
+            onClick={e => e.stopPropagation()}
+          >
             <div className="p-6">
               <div className="flex justify-between items-start">
                 <div>
                   <h2 className="text-2xl font-bold text-biophilic-earth">{selectedTribe.name} Design</h2>
                   <p className="text-muted-foreground">{selectedTribe.country}</p>
                 </div>
-                <Button variant="ghost" size="sm" onClick={() => setSelectedTribe(null)}>
+                <Button variant="ghost" size="sm" onClick={() => setSelectedTribe(null)} className="transition-transform hover:scale-110">
                   ✕
                 </Button>
               </div>
@@ -284,6 +249,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ mapboxToken }) => {
                     src={selectedTribe.images[0]}
                     fallbackSrc1={selectedTribe.images[1]}
                     fallbackSrc2={selectedTribe.images[2]}
+                    defaultFallback="/assets/fallback-image.jpg"
                     alt={`${selectedTribe.name} architecture`}
                     className="w-full h-full object-cover"
                   />
@@ -320,6 +286,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ mapboxToken }) => {
                       <div key={idx} className="aspect-square rounded-md overflow-hidden">
                         <ImageWithFallback
                           src={image}
+                          defaultFallback="/assets/fallback-image.jpg"
                           alt={`${selectedTribe.name} architecture example ${idx + 1}`}
                           className="w-full h-full object-cover hover:scale-105 transition-transform"
                         />

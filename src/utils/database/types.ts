@@ -1,10 +1,24 @@
+
 export interface Course {
   id: string;
   title: string;
   description: string;
   imageUrl: string;
+  image?: string; // Added for compatibility
   modules: Module[];
   createdAt: string;
+  instructor?: string;
+  instructorImage?: string;
+  duration?: string;
+  level?: string;
+  price?: number;
+  isFree?: boolean;
+  isLocked?: boolean;
+  tags?: string[];
+  resources?: Resource[];
+  rating?: number;
+  studentsCount?: number;
+  isFeatured?: boolean;
 }
 
 export interface Module {
@@ -12,6 +26,7 @@ export interface Module {
   title: string;
   description: string;
   lessons: Lesson[];
+  isLocked?: boolean;
 }
 
 export interface Lesson {
@@ -20,6 +35,13 @@ export interface Lesson {
   content: string;
   resources: Resource[];
   studyItems: StudyItem[];
+  type?: "video" | "text" | "quiz" | "assignment";
+  duration?: string;
+  videoUrl?: string;
+  thumbnailUrl?: string;
+  quiz?: Quiz;
+  requiresAudioFeedback?: boolean;
+  isLocked?: boolean;
 }
 
 export interface StudyItem {
@@ -48,6 +70,12 @@ export interface User {
   image?: string;
   role: 'student' | 'instructor' | 'admin';
   courses: Course[];
+  password?: string;
+  fullName?: string;
+  enrolledCourses?: Course[];
+  completedLessons?: string[];
+  quizAttempts?: QuizAttempt[];
+  studyGallery?: StudyItem[];
 }
 
 export interface DiscussionMessage {
@@ -88,4 +116,64 @@ export interface MessageInput {
   userName: string;
   content: string;
   userRole: 'student' | 'instructor' | 'admin';
+}
+
+export interface Quiz {
+  id: string;
+  title: string;
+  questions: QuizQuestion[];
+  timeLimit?: number; // in minutes
+  passingScore: number;
+}
+
+export interface QuizQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  correctAnswerIndex: number;
+  explanation?: string;
+}
+
+export interface QuizAttempt {
+  id: string;
+  quizId: string;
+  userId: string;
+  score: number;
+  answers: number[];
+  completed: boolean;
+  startedAt: string;
+  completedAt?: string;
+}
+
+export interface Certificate {
+  id: string;
+  courseId: string;
+  userId: string;
+  issueDate: string;
+  completionDate: string;
+  certificateUrl: string;
+}
+
+export interface Badge {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  criteria: string;
+  dateEarned: string;
+}
+
+export interface CaseStudy {
+  id: string;
+  title: string;
+  description: string;
+  images: string[];
+  tags: string[];
+  author: string;
+  authorId: string;
+  featured: boolean;
+  published: boolean;
+  createdAt: string;
+  location: string;
+  year: number;
 }
