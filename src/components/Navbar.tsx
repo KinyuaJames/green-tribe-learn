@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Menu, X, LogOut, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,10 +8,12 @@ import { useAuth } from '@/contexts/AuthContext';
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { currentUser, logout } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
     setIsOpen(false);
+    navigate('/login');
   };
 
   return (
@@ -46,6 +48,9 @@ const Navbar = () => {
           </Link>
           <Link to="/courses" className="text-foreground hover:text-biophilic-earth transition-colors">
             Courses
+          </Link>
+          <Link to="/case-studies" className="text-foreground hover:text-biophilic-earth transition-colors">
+            Case Studies
           </Link>
           <Link to="/tribe" className="text-foreground hover:text-biophilic-earth transition-colors">
             Biophilic Tribe
@@ -97,6 +102,13 @@ const Navbar = () => {
               onClick={() => setIsOpen(false)}
             >
               Courses
+            </Link>
+            <Link 
+              to="/case-studies" 
+              className="text-foreground hover:text-biophilic-earth transition-colors px-2 py-2"
+              onClick={() => setIsOpen(false)}
+            >
+              Case Studies
             </Link>
             <Link 
               to="/tribe" 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { getCaseStudies, addCaseStudy } from '@/utils/database';
-import type { CaseStudy } from '@/utils/database/types';
+import { CaseStudy as CaseStudyType } from '@/utils/database/types';
 
 interface CaseStudy {
   id: string;
@@ -29,8 +29,9 @@ interface CaseStudy {
 }
 
 const CaseStudyGallery = () => {
+  const navigate = useNavigate();
   const { currentUser } = useAuth();
-  const [caseStudies, setCaseStudies] = useState<CaseStudy[]>([]);
+  const [caseStudies, setCaseStudies] = useState<CaseStudyType[]>([]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [tags, setTags] = useState('');
@@ -39,6 +40,7 @@ const CaseStudyGallery = () => {
   const [selectedImages, setSelectedImages] = useState<FileList | null>(null);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
   
   useEffect(() => {
     // Get only published case studies
@@ -64,6 +66,7 @@ const CaseStudyGallery = () => {
     
     if (!currentUser) {
       toast.error('Please log in to submit a case study');
+      setShowLoginDialog(true);
       return;
     }
     
@@ -130,6 +133,17 @@ const CaseStudyGallery = () => {
     }
   };
   
+  const handleEnrollClick = () => {
+    if (!currentUser) {
+      setShowLoginDialog(true);
+      return;
+    }
+  };
+  
+  const redirectToLogin = () => {
+    navigate('/login');
+  };
+  
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -146,124 +160,148 @@ const CaseStudyGallery = () => {
           </div>
           
           <div className="flex justify-end mb-8">
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button className="bg-biophilic-earth hover:bg-biophilic-earth/90">
-                  Submit Case Study
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-lg">
-                <DialogHeader>
-                  <DialogTitle>Submit a Biophilic Case Study</DialogTitle>
-                </DialogHeader>
-                
-                <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-                  <div>
-                    <label htmlFor="title" className="block text-sm font-medium mb-1">
-                      Title
-                    </label>
-                    <Input
-                      id="title"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      placeholder="e.g., Eastgate Centre: Biomimicry in Zimbabwe"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="description" className="block text-sm font-medium mb-1">
-                      Description
-                    </label>
-                    <Textarea
-                      id="description"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Describe the biophilic elements and their impact..."
-                      rows={4}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="flex gap-4">
-                    <div className="flex-1">
-                      <label htmlFor="location" className="block text-sm font-medium mb-1">
-                        Location
-                      </label>
-                      <Input
-                        id="location"
-                        value={location}
-                        onChange={(e) => setLocation(e.target.value)}
-                        placeholder="e.g., Nairobi, Kenya"
-                        required
-                      />
-                    </div>
-                    <div className="w-1/3">
-                      <label htmlFor="year" className="block text-sm font-medium mb-1">
-                        Year
-                      </label>
-                      <Input
-                        id="year"
-                        type="number"
-                        value={year}
-                        onChange={(e) => setYear(parseInt(e.target.value))}
-                        placeholder={new Date().getFullYear().toString()}
-                        required
-                      />
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="tags" className="block text-sm font-medium mb-1">
-                      Tags (comma separated)
-                    </label>
-                    <Input
-                      id="tags"
-                      value={tags}
-                      onChange={(e) => setTags(e.target.value)}
-                      placeholder="e.g., biomimicry, passive cooling, sustainable"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="images" className="block text-sm font-medium mb-1">
-                      Images
-                    </label>
-                    <Input
-                      id="images"
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={handleImageSelection}
-                      required
-                    />
-                    
-                    {previewUrls.length > 0 && (
-                      <div className="mt-3 grid grid-cols-2 gap-2">
-                        {previewUrls.map((url, index) => (
-                          <img
-                            key={index}
-                            src={url}
-                            alt={`Preview ${index + 1}`}
-                            className="h-32 w-full object-cover rounded-md"
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="flex justify-end gap-2 pt-3">
-                    <Button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="bg-biophilic-earth hover:bg-biophilic-earth/90"
-                    >
-                      {isSubmitting ? 'Submitting...' : 'Submit for Review'}
+            <Button 
+              onClick={currentUser ? undefined : handleEnrollClick}
+              className="bg-biophilic-earth hover:bg-biophilic-earth/90"
+            >
+              <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
+                <DialogTrigger asChild>
+                  <span>Submit Case Study</span>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Login Required</DialogTitle>
+                  </DialogHeader>
+                  <div className="py-4">
+                    <p className="mb-4">Please log in to submit a case study</p>
+                    <Button onClick={redirectToLogin} className="w-full bg-biophilic-earth hover:bg-biophilic-earth/90">
+                      Go to Login
                     </Button>
                   </div>
-                </form>
-              </DialogContent>
-            </Dialog>
+                </DialogContent>
+              </Dialog>
+
+              <Dialog>
+                {currentUser && (
+                  <>
+                    <DialogTrigger asChild>
+                      <span>Submit Case Study</span>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-lg">
+                      <DialogHeader>
+                        <DialogTitle>Submit a Biophilic Case Study</DialogTitle>
+                      </DialogHeader>
+                      
+                      <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+                        <div>
+                          <label htmlFor="title" className="block text-sm font-medium mb-1">
+                            Title
+                          </label>
+                          <Input
+                            id="title"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            placeholder="e.g., Eastgate Centre: Biomimicry in Zimbabwe"
+                            required
+                          />
+                        </div>
+                        
+                        <div>
+                          <label htmlFor="description" className="block text-sm font-medium mb-1">
+                            Description
+                          </label>
+                          <Textarea
+                            id="description"
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            placeholder="Describe the biophilic elements and their impact..."
+                            rows={4}
+                            required
+                          />
+                        </div>
+                        
+                        <div className="flex gap-4">
+                          <div className="flex-1">
+                            <label htmlFor="location" className="block text-sm font-medium mb-1">
+                              Location
+                            </label>
+                            <Input
+                              id="location"
+                              value={location}
+                              onChange={(e) => setLocation(e.target.value)}
+                              placeholder="e.g., Nairobi, Kenya"
+                              required
+                            />
+                          </div>
+                          <div className="w-1/3">
+                            <label htmlFor="year" className="block text-sm font-medium mb-1">
+                              Year
+                            </label>
+                            <Input
+                              id="year"
+                              type="number"
+                              value={year}
+                              onChange={(e) => setYear(parseInt(e.target.value))}
+                              placeholder={new Date().getFullYear().toString()}
+                              required
+                            />
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <label htmlFor="tags" className="block text-sm font-medium mb-1">
+                            Tags (comma separated)
+                          </label>
+                          <Input
+                            id="tags"
+                            value={tags}
+                            onChange={(e) => setTags(e.target.value)}
+                            placeholder="e.g., biomimicry, passive cooling, sustainable"
+                          />
+                        </div>
+                        
+                        <div>
+                          <label htmlFor="images" className="block text-sm font-medium mb-1">
+                            Images
+                          </label>
+                          <Input
+                            id="images"
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={handleImageSelection}
+                            required
+                          />
+                          
+                          {previewUrls.length > 0 && (
+                            <div className="mt-3 grid grid-cols-2 gap-2">
+                              {previewUrls.map((url, index) => (
+                                <img
+                                  key={index}
+                                  src={url}
+                                  alt={`Preview ${index + 1}`}
+                                  className="h-32 w-full object-cover rounded-md"
+                                />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div className="flex justify-end gap-2 pt-3">
+                          <Button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="bg-biophilic-earth hover:bg-biophilic-earth/90"
+                          >
+                            {isSubmitting ? 'Submitting...' : 'Submit for Review'}
+                          </Button>
+                        </div>
+                      </form>
+                    </DialogContent>
+                  </>
+                )}
+              </Dialog>
+            </Button>
           </div>
           
           {/* Masonry Layout */}
@@ -279,7 +317,7 @@ const CaseStudyGallery = () => {
                     <img
                       src={study.images[0] || '/placeholder.svg'}
                       alt={study.title}
-                      className="w-full h-full object-cover transition-transform hover:scale-105"
+                      className="case-study-image"
                     />
                   </div>
                   
@@ -326,13 +364,12 @@ const CaseStudyGallery = () => {
                 <p className="text-sm text-muted-foreground mb-6">
                   Be the first to submit a biophilic design case study!
                 </p>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button className="bg-biophilic-earth hover:bg-biophilic-earth/90">
-                      Submit Case Study
-                    </Button>
-                  </DialogTrigger>
-                </Dialog>
+                <Button 
+                  onClick={currentUser ? undefined : handleEnrollClick}
+                  className="bg-biophilic-earth hover:bg-biophilic-earth/90"
+                >
+                  Submit Case Study
+                </Button>
               </div>
             )}
           </div>

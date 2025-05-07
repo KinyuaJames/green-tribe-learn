@@ -1,19 +1,21 @@
-
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CheckCircle, FileText, Download, Video, Mic, Upload, MessageSquare, Book } from 'lucide-react';
 import { getCourses, Course } from '@/utils/database';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Courses = () => {
+  const navigate = useNavigate();
   const { currentUser } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
   
   useEffect(() => {
     const allCourses = getCourses();
@@ -40,6 +42,18 @@ const Courses = () => {
       return `KES ${course.price}`;
     }
   };
+  
+  // Handle enrollment clicks when user is not logged in
+  const handleEnrollClick = (e: React.MouseEvent, courseId: string) => {
+    if (!currentUser) {
+      e.preventDefault();
+      setShowLoginDialog(true);
+    }
+  };
+  
+  const redirectToLogin = () => {
+    navigate('/login');
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -56,6 +70,20 @@ const Courses = () => {
             </p>
           </div>
           
+          <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Login Required</DialogTitle>
+              </DialogHeader>
+              <div className="py-4">
+                <p className="mb-4">Please log in to enroll in this course</p>
+                <Button onClick={redirectToLogin} className="w-full bg-biophilic-earth hover:bg-biophilic-earth/90">
+                  Go to Login
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
             {courses.map(course => (
               <Card key={course.id} className="overflow-hidden flex flex-col">
@@ -63,7 +91,7 @@ const Courses = () => {
                   <img 
                     src={course.image} 
                     alt={course.title}
-                    className="w-full h-full object-cover"
+                    className="course-card-image"
                   />
                 </div>
                 <CardHeader className="pb-2">
@@ -89,7 +117,10 @@ const Courses = () => {
                   <span className="font-bold text-lg text-biophilic-clay">
                     {getPriceDisplay(course)}
                   </span>
-                  <Link to={`/course/${course.id}`}>
+                  <Link 
+                    to={`/course/${course.id}`} 
+                    onClick={(e) => !isEnrolled(course.id) && handleEnrollClick(e, course.id)}
+                  >
                     <Button className="bg-biophilic-earth hover:bg-biophilic-earth/90 text-white">
                       {isEnrolled(course.id) ? 'View Course' : 'Enroll Now'}
                     </Button>

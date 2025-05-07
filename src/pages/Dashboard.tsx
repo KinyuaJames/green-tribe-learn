@@ -1,406 +1,148 @@
 
-import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { useAuth } from '@/contexts/AuthContext';
-import { getUserEnrolledCourses, Course } from '@/utils/database';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Book, User, Image, Award, Gift } from 'lucide-react';
-import StudyGallery from '@/components/StudyGallery';
-import VoiceRecorder from '@/components/VoiceRecorder';
-import Certificate from '@/components/Certificate';
 import Achievements from '@/components/Achievements';
+import StudyGallery from '@/components/StudyGallery';
 import ResourceVault from '@/components/ResourceVault';
-import { toast } from 'sonner';
-
-// Study gallery item type
-interface StudyItem {
-  id: string;
-  title: string;
-  type: 'image' | 'note' | 'voice';
-  content: string;
-  thumbnail?: string;
-  createdAt: string;
-}
-
-// Helper function to get study items from localStorage
-const getStudyItems = (userId: string): StudyItem[] => {
-  const itemsJson = localStorage.getItem(`studyItems_${userId}`);
-  return itemsJson ? JSON.parse(itemsJson) : [];
-};
-
-// Helper function to save study items to localStorage
-const saveStudyItems = (userId: string, items: StudyItem[]) => {
-  localStorage.setItem(`studyItems_${userId}`, JSON.stringify(items));
-};
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
+import { CheckCircle, Calendar, BookOpen } from 'lucide-react';
+import { getUserEnrolledCourses, Course } from '@/utils/database';
 
 const Dashboard = () => {
   const { currentUser } = useAuth();
-  const navigate = useNavigate();
   const [enrolledCourses, setEnrolledCourses] = useState<Course[]>([]);
-  const [studyItems, setStudyItems] = useState<StudyItem[]>([]);
   const [activeTab, setActiveTab] = useState('courses');
-  const [isRecording, setIsRecording] = useState(false);
-  const [noteTitle, setNoteTitle] = useState('');
-  const [noteContent, setNoteContent] = useState('');
   
   useEffect(() => {
     if (currentUser) {
-      const courses = getUserEnrolledCourses(currentUser.id);
-      setEnrolledCourses(courses);
-      
-      // Load study items for the user
-      const items = getStudyItems(currentUser.id);
-      setStudyItems(items);
+      // Fix: Get course objects directly
+      const userCourses = getUserEnrolledCourses(currentUser.id);
+      setEnrolledCourses(userCourses);
     }
   }, [currentUser]);
 
-  const handleAddVoiceNote = (audioBlob: Blob) => {
-    if (!currentUser) return;
+  // Calculate course completion percentage
+  const calculateCompletion = (course: Course) => {
+    if (!currentUser || !course) return 0;
     
-    const audioUrl = URL.createObjectURL(audioBlob);
-    const newItem: StudyItem = {
-      id: crypto.randomUUID(),
-      title: `Voice Note - ${new Date().toLocaleDateString()}`,
-      type: 'voice',
-      content: audioUrl,
-      createdAt: new Date().toISOString()
-    };
+    let totalLessons = 0;
+    let completedLessons = 0;
     
-    const updatedItems = [...studyItems, newItem];
-    setStudyItems(updatedItems);
-    saveStudyItems(currentUser.id, updatedItems);
-    toast.success('Voice note added to your study gallery!');
+    course.modules.forEach(module => {
+      totalLessons += module.lessons.length;
+      
+      module.lessons.forEach(lesson => {
+        if (currentUser.completedLessons.includes(lesson.id)) {
+          completedLessons++;
+        }
+      });
+    });
+    
+    return totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
   };
   
-  const handleAddTextNote = () => {
-    if (!currentUser || !noteTitle.trim() || !noteContent.trim()) {
-      toast.error('Please provide both a title and content for your note');
-      return;
-    }
-    
-    const newItem: StudyItem = {
-      id: crypto.randomUUID(),
-      title: noteTitle,
-      type: 'note',
-      content: noteContent,
-      createdAt: new Date().toISOString()
-    };
-    
-    const updatedItems = [...studyItems, newItem];
-    setStudyItems(updatedItems);
-    saveStudyItems(currentUser.id, updatedItems);
-    
-    // Reset form
-    setNoteTitle('');
-    setNoteContent('');
-    toast.success('Note added to your study gallery!');
-  };
-  
-  const handleDeleteStudyItem = (itemId: string) => {
-    if (!currentUser) return;
-    
-    const updatedItems = studyItems.filter(item => item.id !== itemId);
-    setStudyItems(updatedItems);
-    saveStudyItems(currentUser.id, updatedItems);
-  };
-
-  // Get all resources from enrolled courses
-  const getAllResources = () => {
-    const resources = [];
-    for (const course of enrolledCourses) {
-      if (course.resources) {
-        resources.push(...course.resources);
-      }
-    }
-    return resources;
-  };
-
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      <main className="flex-grow py-12 px-4 sm:px-6 lg:px-8 bg-background">
-        <div className="container mx-auto">
-          <div className="mb-10">
-            <h1 className="text-3xl font-bold text-biophilic-earth">Welcome, {currentUser?.fullName}</h1>
-            <p className="text-foreground/70 mt-2">Your learning dashboard</p>
-          </div>
-          
-          <Tabs defaultValue="courses" value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="mb-8">
-              <TabsTrigger value="courses" className="flex items-center gap-2">
-                <Book className="h-4 w-4" /> My Courses
-              </TabsTrigger>
-              <TabsTrigger value="gallery" className="flex items-center gap-2">
-                <Image className="h-4 w-4" /> Study Gallery
-              </TabsTrigger>
-              <TabsTrigger value="achievements" className="flex items-center gap-2">
-                <Award className="h-4 w-4" /> Achievements
-              </TabsTrigger>
-              <TabsTrigger value="resources" className="flex items-center gap-2">
-                <Gift className="h-4 w-4" /> Resource Vault
-              </TabsTrigger>
-              <TabsTrigger value="profile" className="flex items-center gap-2">
-                <User className="h-4 w-4" /> My Profile
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="courses">
-              <div className="grid grid-cols-1 gap-6">
-                <div className="bg-white rounded-lg shadow-sm border border-border p-6">
-                  <h2 className="text-xl font-semibold text-biophilic-earth flex items-center mb-6">
-                    <Book className="mr-2 h-5 w-5" /> My Courses
-                  </h2>
-                  
-                  {enrolledCourses.length === 0 ? (
-                    <div className="mt-6 p-8 text-center bg-muted/30 rounded-lg">
-                      <p className="text-foreground/70">You haven't enrolled in any courses yet.</p>
-                      <Link to="/courses" className="inline-block mt-4">
+      <main className="flex-grow py-12 px-4">
+        <div className="container mx-auto max-w-6xl">
+          {currentUser && (
+            <>
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                <div>
+                  <h1 className="text-3xl font-bold text-biophilic-earth">Welcome, {currentUser.fullName || currentUser.email}</h1>
+                  <p className="text-muted-foreground mt-1">Track your learning journey</p>
+                </div>
+                
+                <div className="flex gap-3">
+                  <Link to="/courses">
+                    <Button variant="outline" className="border-biophilic-earth text-biophilic-earth">
+                      Explore Courses
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+              
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
+                <TabsList className="w-full md:w-auto mb-6 bg-background border">
+                  <TabsTrigger value="courses" className="flex-1 md:flex-auto">My Courses</TabsTrigger>
+                  <TabsTrigger value="achievements" className="flex-1 md:flex-auto">Achievements</TabsTrigger>
+                  <TabsTrigger value="gallery" className="flex-1 md:flex-auto">Study Gallery</TabsTrigger>
+                  <TabsTrigger value="resources" className="flex-1 md:flex-auto">Resources</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="courses" className="mt-0">
+                  {enrolledCourses.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {enrolledCourses.map((course) => (
+                        <Card key={course.id} className="flex flex-col">
+                          <div className="aspect-video overflow-hidden">
+                            <img 
+                              src={course.image} 
+                              alt={course.title}
+                              className="course-card-image"
+                            />
+                          </div>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-lg text-biophilic-earth">{course.title}</CardTitle>
+                            <CardDescription>By {course.instructor}</CardDescription>
+                          </CardHeader>
+                          <CardContent className="flex-grow">
+                            <div className="flex justify-between items-center mb-1 text-sm">
+                              <span>Progress</span>
+                              <span className="font-medium">{calculateCompletion(course)}%</span>
+                            </div>
+                            <Progress value={calculateCompletion(course)} className="h-2" />
+                            
+                            <div className="flex gap-1 items-center text-sm text-muted-foreground mt-4">
+                              <CheckCircle className="h-4 w-4 text-green-500" />
+                              <span>Last completed: Module 2 - Lesson 1</span>
+                            </div>
+                          </CardContent>
+                          <CardFooter>
+                            <Link to={`/course/${course.id}`} className="w-full">
+                              <Button className="w-full bg-biophilic-earth hover:bg-biophilic-earth/90">
+                                Continue Learning
+                              </Button>
+                            </Link>
+                          </CardFooter>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <h3 className="text-xl font-medium text-biophilic-earth mb-2">No enrolled courses yet</h3>
+                      <p className="text-muted-foreground mb-6">Start your learning journey by exploring our courses</p>
+                      <Link to="/courses">
                         <Button className="bg-biophilic-earth hover:bg-biophilic-earth/90">
                           Browse Courses
                         </Button>
                       </Link>
                     </div>
-                  ) : (
-                    <div className="mt-6 space-y-4">
-                      {enrolledCourses.map((course) => (
-                        <Card key={course.id} className="overflow-hidden">
-                          <div className="md:flex">
-                            <div className="md:w-1/3 h-40 md:h-auto">
-                              <img 
-                                src={course.image} 
-                                alt={course.title} 
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                            <div className="md:w-2/3 p-6">
-                              <h3 className="text-lg font-semibold">{course.title}</h3>
-                              <p className="text-sm text-muted-foreground mt-2">
-                                By {course.instructor}
-                              </p>
-                              <div className="mt-4 flex justify-between items-center">
-                                <div>
-                                  <span className="text-sm text-muted-foreground">
-                                    {course.isFree ? 'Free Course' : `KES ${course.price}`}
-                                  </span>
-                                </div>
-                                <Link to={`/course/${course.id}`}>
-                                  <Button className="bg-biophilic-earth hover:bg-biophilic-earth/90">
-                                    Continue Learning
-                                  </Button>
-                                </Link>
-                              </div>
-                            </div>
-                          </div>
-                        </Card>
-                      ))}
-                    </div>
                   )}
-                </div>
+                </TabsContent>
                 
-                <div className="bg-white rounded-lg shadow-sm border border-border p-6">
-                  <h2 className="text-xl font-semibold text-biophilic-earth mb-6">Recommended</h2>
-                  <div className="mt-4">
-                    <Link to="/courses">
-                      <Button className="w-full bg-biophilic-earth hover:bg-biophilic-earth/90">
-                        Explore More Courses
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="gallery">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2">
-                  <Card className="mb-8">
-                    <CardHeader>
-                      <CardTitle className="text-biophilic-earth">Study Gallery</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <StudyGallery 
-                        items={studyItems} 
-                        onDeleteItem={handleDeleteStudyItem}
-                      />
-                    </CardContent>
-                  </Card>
-                </div>
+                <TabsContent value="achievements">
+                  <Achievements />
+                </TabsContent>
                 
-                <div className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-biophilic-earth">Add Voice Note</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <VoiceRecorder onRecordingComplete={handleAddVoiceNote} />
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-biophilic-earth">Add Text Note</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div>
-                          <label htmlFor="note-title" className="text-sm font-medium block mb-1">
-                            Note Title
-                          </label>
-                          <input
-                            id="note-title"
-                            type="text"
-                            className="w-full px-3 py-2 border rounded-md"
-                            placeholder="Enter a title for your note"
-                            value={noteTitle}
-                            onChange={(e) => setNoteTitle(e.target.value)}
-                          />
-                        </div>
-                        <div>
-                          <label htmlFor="note-content" className="text-sm font-medium block mb-1">
-                            Note Content
-                          </label>
-                          <textarea
-                            id="note-content"
-                            className="w-full px-3 py-2 border rounded-md min-h-[120px]"
-                            placeholder="Write your note here..."
-                            value={noteContent}
-                            onChange={(e) => setNoteContent(e.target.value)}
-                          />
-                        </div>
-                        <Button
-                          className="w-full bg-biophilic-earth hover:bg-biophilic-earth/90"
-                          onClick={handleAddTextNote}
-                        >
-                          Save Note
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="achievements">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="md:col-span-2">
-                  {currentUser?.badges && (
-                    <Achievements badges={currentUser.badges} />
-                  )}
-                </div>
+                <TabsContent value="gallery">
+                  <StudyGallery />
+                </TabsContent>
                 
-                <div>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-biophilic-earth">Your Certificates</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                      {currentUser?.certificates && currentUser.certificates.length > 0 ? (
-                        currentUser.certificates.map(certificate => (
-                          <Certificate
-                            key={certificate.id}
-                            certificate={certificate}
-                            userName={currentUser.fullName}
-                          />
-                        ))
-                      ) : (
-                        <div className="text-center py-8">
-                          <p className="text-muted-foreground">Complete courses to earn certificates!</p>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="resources">
-              <ResourceVault resources={getAllResources()} />
-            </TabsContent>
-            
-            <TabsContent value="profile">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <Card className="overflow-hidden">
-                  <CardHeader>
-                    <CardTitle className="text-biophilic-earth flex items-center">
-                      <User className="mr-2 h-5 w-5" /> My Profile
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-muted-foreground">Full Name</label>
-                        <p className="mt-1 text-foreground">{currentUser?.fullName}</p>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-muted-foreground">Email</label>
-                        <p className="mt-1 text-foreground">{currentUser?.email}</p>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-muted-foreground">Member Since</label>
-                        <p className="mt-1 text-foreground">
-                          {currentUser?.createdAt ? new Date(currentUser.createdAt).toLocaleDateString() : 'N/A'}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                  <CardFooter>
-                    <Button className="w-full" variant="outline">
-                      Edit Profile
-                    </Button>
-                  </CardFooter>
-                </Card>
-                
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-biophilic-earth">Learning Statistics</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-muted-foreground">Enrolled Courses</label>
-                        <p className="mt-1 text-foreground text-2xl font-bold">{enrolledCourses.length}</p>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-muted-foreground">Study Notes</label>
-                        <p className="mt-1 text-foreground text-2xl font-bold">
-                          {studyItems.filter(item => item.type === 'note').length}
-                        </p>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-muted-foreground">Voice Recordings</label>
-                        <p className="mt-1 text-foreground text-2xl font-bold">
-                          {studyItems.filter(item => item.type === 'voice').length}
-                        </p>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-muted-foreground">Earned Badges</label>
-                        <p className="mt-1 text-foreground text-2xl font-bold">
-                          {currentUser?.badges?.length || 0}
-                        </p>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-muted-foreground">Certificates</label>
-                        <p className="mt-1 text-foreground text-2xl font-bold">
-                          {currentUser?.certificates?.length || 0}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-          </Tabs>
+                <TabsContent value="resources">
+                  <ResourceVault />
+                </TabsContent>
+              </Tabs>
+            </>
+          )}
         </div>
       </main>
       

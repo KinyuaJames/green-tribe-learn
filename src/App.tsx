@@ -3,8 +3,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import { useEffect, useState } from "react";
 import Index from "./pages/Index";
 import Courses from "./pages/Courses";
 import CourseDetail from "./pages/CourseDetail";
@@ -19,7 +20,17 @@ import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { useState } from "react";
+
+// Scroll to top component
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  
+  return null;
+};
 
 const App = () => {
   // Create a new QueryClient instance inside the component
@@ -32,12 +43,21 @@ const App = () => {
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <ScrollToTop />
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/courses" element={<Courses />} />
               <Route path="/course/:courseId" element={<CourseDetail />} />
-              <Route path="/course/:courseId/lesson/:lessonId" element={<LessonDetail />} />
-              <Route path="/course/:courseId/discussion" element={<CourseDiscussion />} />
+              <Route path="/course/:courseId/lesson/:lessonId" element={
+                <ProtectedRoute>
+                  <LessonDetail />
+                </ProtectedRoute>
+              } />
+              <Route path="/course/:courseId/discussion" element={
+                <ProtectedRoute>
+                  <CourseDiscussion />
+                </ProtectedRoute>
+              } />
               <Route path="/case-studies" element={<CaseStudyGallery />} />
               <Route path="/case-study/:caseStudyId" element={<CaseStudyDetail />} />
               <Route path="/tribe" element={<Tribe />} />

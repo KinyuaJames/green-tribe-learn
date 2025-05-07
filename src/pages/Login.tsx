@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,8 +29,12 @@ const formSchema = z.object({
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Get the redirect path from the location state or default to dashboard
+  const from = location.state?.from || "/dashboard";
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -48,7 +52,8 @@ const Login = () => {
       const success = await login(values.email, values.password);
       
       if (success) {
-        navigate("/dashboard");
+        // Redirect to the page they were trying to access
+        navigate(from);
       }
     } finally {
       setIsSubmitting(false);
