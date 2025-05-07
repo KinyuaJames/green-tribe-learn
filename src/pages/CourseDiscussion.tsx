@@ -55,12 +55,17 @@ const CourseDiscussion = () => {
     setIsCreatingThread(true);
     
     try {
+      // Initial message content for the thread
+      const initialMessage = "Let's discuss this topic!";
+      
       // Create the discussion thread with proper types
       const newThread = createDiscussionThread({
         courseId: courseId || '',
         title: newThreadTitle,
         studentId: currentUser.id,
-        studentName: currentUser.name || currentUser.email
+        studentName: currentUser.name || currentUser.email,
+        message: initialMessage,
+        userRole: 'student'
       });
       
       // TypeScript-safe way to update the array
@@ -94,7 +99,8 @@ const CourseDiscussion = () => {
         threadId,
         userId: currentUser.id,
         userName: currentUser.name || currentUser.email,
-        content: newMessage
+        content: newMessage,
+        userRole: 'student'
       });
       
       // Update the discussions state in a type-safe way

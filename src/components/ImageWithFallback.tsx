@@ -21,15 +21,28 @@ const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
   className = "",
   ...rest
 }) => {
-  const [imgSrc, setImgSrc] = useState<string>(src);
+  const [imgSrc, setImgSrc] = useState<string>(src || '');
   const [fallbackIndex, setFallbackIndex] = useState<number>(0);
   const [hasError, setHasError] = useState<boolean>(false);
 
   useEffect(() => {
-    setImgSrc(src);
-    setFallbackIndex(0);
-    setHasError(false);
-  }, [src]);
+    // Reset state when src changes
+    if (src) {
+      setImgSrc(src);
+      setFallbackIndex(0);
+      setHasError(false);
+    } else if (fallbackSrc1) {
+      // If src is empty but we have a fallback, use it immediately
+      setImgSrc(fallbackSrc1);
+      setFallbackIndex(1);
+    } else if (fallbackSrc2) {
+      setImgSrc(fallbackSrc2);
+      setFallbackIndex(2);
+    } else {
+      setImgSrc(defaultFallback);
+      setHasError(true);
+    }
+  }, [src, fallbackSrc1, fallbackSrc2, defaultFallback]);
 
   const handleError = () => {
     if (fallbackIndex === 0 && fallbackSrc1) {

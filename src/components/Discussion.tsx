@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
 import { MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
+import { DiscussionMessage } from '@/utils/database/types';
 
 export interface DiscussionPost {
   id: string;
@@ -29,14 +30,16 @@ export interface DiscussionReply {
 }
 
 interface DiscussionProps {
-  posts: DiscussionPost[];
-  onNewPost: (content: string) => void;
+  posts?: DiscussionPost[];
+  discussionMessages?: DiscussionMessage[];
+  onNewPost?: (content: string) => void;
   onNewReply?: (postId: string, content: string) => void;
   onLike?: (postId: string) => void;
 }
 
 export const Discussion: React.FC<DiscussionProps> = ({ 
-  posts, 
+  posts = [],
+  discussionMessages = [],
   onNewPost, 
   onNewReply,
   onLike
@@ -45,6 +48,20 @@ export const Discussion: React.FC<DiscussionProps> = ({
   const [replyContent, setReplyContent] = useState<{[key: string]: string}>({});
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const { currentUser } = useAuth();
+  
+  // Normalize discussionMessages to the posts format if provided
+  const displayPosts = discussionMessages.length > 0 
+    ? discussionMessages.map(msg => ({
+        id: msg.id,
+        content: msg.content,
+        authorId: msg.userId,
+        authorName: msg.userName,
+        authorImage: msg.userImage,
+        timestamp: msg.createdAt,
+        likes: msg.likes || 0,
+        replies: []
+      }))
+    : posts;
   
   const handlePostSubmit = () => {
     if (!currentUser) {
@@ -57,8 +74,10 @@ export const Discussion: React.FC<DiscussionProps> = ({
       return;
     }
     
-    onNewPost(newPostContent.trim());
-    setNewPostContent('');
+    if (onNewPost) {
+      onNewPost(newPostContent.trim());
+      setNewPostContent('');
+    }
   };
   
   const handleReplySubmit = (postId: string) => {
@@ -96,12 +115,12 @@ export const Discussion: React.FC<DiscussionProps> = ({
 
   return (
     <div className="space-y-6">
-      {currentUser && (
+      {currentUser && onNewPost && (
         <Card>
           <CardContent className="pt-6">
             <div className="flex gap-4">
               <Avatar>
-                <AvatarFallback>{currentUser.fullName[0]}</AvatarFallback>
+                <AvatarFallback>{currentUser.fullName ? currentUser.fullName[0] : 'U'}</AvatarFallback>
               </Avatar>
               <div className="flex-1">
                 <Textarea
@@ -122,7 +141,7 @@ export const Discussion: React.FC<DiscussionProps> = ({
         </Card>
       )}
       
-      {posts.length === 0 ? (
+      {displayPosts.length === 0 ? (
         <div className="text-center py-10 bg-muted/30 rounded-lg">
           <MessageSquare className="mx-auto h-12 w-12 text-muted-foreground/70 mb-2" />
           <p className="text-lg text-biophilic-earth mb-2">No discussions yet</p>
@@ -132,7 +151,7 @@ export const Discussion: React.FC<DiscussionProps> = ({
         </div>
       ) : (
         <div className="space-y-4">
-          {posts.map(post => (
+          {displayPosts.map(post => (
             <Card key={post.id} className="border-biophilic-sand/30">
               <CardContent className="pt-6">
                 <div className="flex gap-4">
@@ -151,26 +170,30 @@ export const Discussion: React.FC<DiscussionProps> = ({
                     </div>
                     <p className="my-3">{post.content}</p>
                     <div className="flex gap-4 mt-2">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => handleLike(post.id)}
-                        className="text-muted-foreground hover:text-biophilic-earth"
-                      >
-                        ❤️ {post.likes}
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => toggleReply(post.id)}
-                        className="text-muted-foreground hover:text-biophilic-earth"
-                      >
-                        Reply
-                      </Button>
+                      {onLike && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => handleLike(post.id)}
+                          className="text-muted-foreground hover:text-biophilic-earth"
+                        >
+                          ❤️ {post.likes}
+                        </Button>
+                      )}
+                      {onNewReply && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => toggleReply(post.id)}
+                          className="text-muted-foreground hover:text-biophilic-earth"
+                        >
+                          Reply
+                        </Button>
+                      )}
                     </div>
                     
                     {/* Replies */}
-                    {post.replies.length > 0 && (
+                    {post.replies && post.replies.length > 0 && (
                       <div className="mt-4 pl-6 border-l-2 border-muted space-y-4">
                         {post.replies.map(reply => (
                           <div key={reply.id} className="flex gap-3">
@@ -193,7 +216,7 @@ export const Discussion: React.FC<DiscussionProps> = ({
                     )}
                     
                     {/* Reply Input */}
-                    {replyingTo === post.id && currentUser && (
+                    {replyingTo === post.id && currentUser && onNewReply && (
                       <div className="mt-4 pl-6">
                         <Textarea
                           placeholder="Write a reply..."

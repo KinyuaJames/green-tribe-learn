@@ -12,7 +12,62 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle, Calendar, BookOpen } from 'lucide-react';
-import { getUserEnrolledCourses, Course } from '@/utils/database';
+import { getUserEnrolledCourses, Course, getCourseById } from '@/utils/database';
+import { Badge } from '@/utils/database/types';
+
+// Mock data for components that need props
+const mockBadges: Badge[] = [
+  {
+    id: '1',
+    title: 'Course Completion',
+    description: 'Completed your first course',
+    imageUrl: 'https://images.unsplash.com/photo-1557053910-d9eadeed1c58',
+    earnedDate: new Date().toISOString()
+  },
+  {
+    id: '2',
+    title: 'Discussion Starter',
+    description: 'Started your first discussion thread',
+    imageUrl: 'https://images.unsplash.com/photo-1491438590914-bc09fcaaf77a',
+    earnedDate: new Date().toISOString()
+  }
+];
+
+const mockStudyItems = [
+  {
+    id: '1',
+    title: 'Biophilic Design Sketch',
+    imageUrl: 'https://images.unsplash.com/photo-1574244107559-a83421f7aa0d',
+    description: 'My design exploration inspired by natural forms',
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: '2',
+    title: 'Vernacular Architecture Study',
+    imageUrl: 'https://images.unsplash.com/photo-1465056836041-7f43ac27dcb5',
+    description: 'Analysis of traditional building techniques',
+    createdAt: new Date().toISOString()
+  }
+];
+
+const mockResources = [
+  {
+    id: '1',
+    title: 'Sustainable Materials Guide',
+    type: 'PDF',
+    url: '#',
+    description: 'Comprehensive guide to eco-friendly building materials',
+    category: 'Materials'
+  },
+  {
+    id: '2',
+    title: 'Vernacular Architecture Principles',
+    type: 'Video',
+    url: '#',
+    description: 'Learn about time-tested design principles from indigenous cultures',
+    category: 'Design'
+  }
+];
 
 const Dashboard = () => {
   const { currentUser } = useAuth();
@@ -20,28 +75,32 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('courses');
   
   useEffect(() => {
-    if (currentUser) {
-      // Fix: Get course objects directly
-      const userCourses = getUserEnrolledCourses(currentUser.id);
-      setEnrolledCourses(userCourses);
+    if (currentUser && currentUser.enrolledCourses) {
+      // Map through the IDs and get the actual course objects
+      const courses = currentUser.enrolledCourses.map(courseId => {
+        return getCourseById(courseId);
+      }).filter(Boolean) as Course[]; // Filter out any undefined/null values
+      setEnrolledCourses(courses);
     }
   }, [currentUser]);
 
   // Calculate course completion percentage
   const calculateCompletion = (course: Course) => {
-    if (!currentUser || !course) return 0;
+    if (!currentUser || !course || !course.modules) return 0;
     
     let totalLessons = 0;
     let completedLessons = 0;
     
     course.modules.forEach(module => {
-      totalLessons += module.lessons.length;
-      
-      module.lessons.forEach(lesson => {
-        if (currentUser.completedLessons.includes(lesson.id)) {
-          completedLessons++;
-        }
-      });
+      if (module.lessons) {
+        totalLessons += module.lessons.length;
+        
+        module.lessons.forEach(lesson => {
+          if (currentUser.completedLessons && currentUser.completedLessons.includes(lesson.id)) {
+            completedLessons++;
+          }
+        });
+      }
     });
     
     return totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
@@ -79,7 +138,7 @@ const Dashboard = () => {
                 </TabsList>
                 
                 <TabsContent value="courses" className="mt-0">
-                  {enrolledCourses.length > 0 ? (
+                  {enrolledCourses && enrolledCourses.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {enrolledCourses.map((course) => (
                         <Card key={course.id} className="flex flex-col">
@@ -130,15 +189,15 @@ const Dashboard = () => {
                 </TabsContent>
                 
                 <TabsContent value="achievements">
-                  <Achievements />
+                  <Achievements badges={mockBadges} />
                 </TabsContent>
                 
                 <TabsContent value="gallery">
-                  <StudyGallery />
+                  <StudyGallery items={mockStudyItems} />
                 </TabsContent>
                 
                 <TabsContent value="resources">
-                  <ResourceVault />
+                  <ResourceVault resources={mockResources} />
                 </TabsContent>
               </Tabs>
             </>

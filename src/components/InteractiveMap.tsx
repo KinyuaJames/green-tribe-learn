@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import ImageWithFallback from './ImageWithFallback';
@@ -12,7 +12,7 @@ const tribalDesigns = [
   {
     id: 'dogon',
     name: 'Dogon',
-    location: [3.5, 13.9], // Mali
+    location: [3.5, 13.9] as [number, number], // Mali
     country: 'Mali',
     description: 'The Dogon people are known for their stone and mud architecture, including cliff dwellings, granaries with thatched roofs, and meetinghouses with intricately carved wooden doors and posts.',
     materials: ['Clay', 'Stone', 'Thatch'],
@@ -208,10 +208,12 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ mapboxToken }) => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Mapbox API Token Required</DialogTitle>
+            <DialogDescription>
+              Please enter your Mapbox public token to enable the interactive map.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Please enter your Mapbox public token to enable the interactive map. 
               You can find this in your Mapbox account dashboard.
             </p>
             <input
