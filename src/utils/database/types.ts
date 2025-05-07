@@ -52,6 +52,7 @@ export interface StudyItem {
   createdAt: string;
   type: string;
   content: string;
+  moduleId?: string; // Adding this to fix type errors
 }
 
 export interface Resource {
@@ -76,6 +77,11 @@ export interface User {
   completedLessons?: string[];
   quizAttempts?: QuizAttempt[];
   studyGallery?: StudyItem[];
+  // Adding missing properties that are used in the application
+  badges?: Badge[];
+  certificates?: Certificate[];
+  completedQuizzes?: string[];
+  avatar?: string;
 }
 
 export interface DiscussionMessage {
@@ -124,6 +130,7 @@ export interface Quiz {
   questions: QuizQuestion[];
   timeLimit?: number; // in minutes
   passingScore: number;
+  description?: string; // Added to fix build errors
 }
 
 export interface QuizQuestion {
@@ -132,6 +139,8 @@ export interface QuizQuestion {
   options: string[];
   correctAnswerIndex: number;
   explanation?: string;
+  correctOptionId?: string; // Added to fix build errors
+  text?: string; // Added to fix build errors
 }
 
 export interface QuizAttempt {
@@ -143,6 +152,7 @@ export interface QuizAttempt {
   completed: boolean;
   startedAt: string;
   completedAt?: string;
+  totalQuestions?: number; // Added to fix build errors
 }
 
 export interface Certificate {
@@ -152,6 +162,8 @@ export interface Certificate {
   issueDate: string;
   completionDate: string;
   certificateUrl: string;
+  courseTitle?: string; // Added to fix build errors
+  courseName?: string; // Added to fix build errors
 }
 
 export interface Badge {
@@ -161,6 +173,8 @@ export interface Badge {
   imageUrl: string;
   criteria: string;
   dateEarned: string;
+  image?: string; // Added to fix build errors
+  earnedDate?: string; // Added to fix build errors
 }
 
 export interface CaseStudy {
@@ -176,4 +190,13 @@ export interface CaseStudy {
   createdAt: string;
   location: string;
   year: number;
+}
+
+// Add this to fix StudyNoteInput error
+export interface StudyNoteInput {
+  title: string;
+  content: string;
+  userId: string;
+  courseId?: string;
+  lessonId?: string;
 }

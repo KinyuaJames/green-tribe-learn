@@ -1,12 +1,14 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import ImageWithFallback from './ImageWithFallback';
 
-// Mapbox token - we're using a constant here for reliability
+// Mapbox token
 const MAPBOX_TOKEN = 'pk.eyJ1Ijoiamlta20iLCJhIjoiY21hZTloMDE3MDR5ZTJxczU5b2Y2Z2QwNSJ9.e_f21CLkuIeY6fLQ4fuSkA';
 
 // Tribal design data
@@ -129,63 +131,65 @@ interface InteractiveMapProps {
   mapboxToken?: string;
 }
 
-const InteractiveMap: React.FC<InteractiveMapProps> = ({ mapboxToken }) => {
+const InteractiveMap: React.FC<InteractiveMapProps> = ({ mapboxToken = MAPBOX_TOKEN }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [selectedTribe, setSelectedTribe] = useState<typeof tribalDesigns[0] | null>(null);
   const [mapReady, setMapReady] = useState<boolean>(false);
+  const [mapError, setMapError] = useState<string | null>(null);
   
   // Initialize map when container is available
   useEffect(() => {
     if (mapContainer.current && !map.current) {
       // Set the access token directly
-      mapboxgl.accessToken = MAPBOX_TOKEN;
+      mapboxgl.accessToken = mapboxToken;
       
       try {
+        console.log("Initializing Mapbox with token:", mapboxToken);
+        
         map.current = new mapboxgl.Map({
           container: mapContainer.current,
           style: 'mapbox://styles/mapbox/satellite-streets-v12',
           center: [19.0, 4.0], // Center on Africa
           zoom: 2.5,
-          projection: 'globe'
+          projection: {
+            name: 'mercator' // Use mercator instead of globe for better compatibility
+          }
         });
 
         map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
         
-        // Add atmosphere and terrain
+        // Set mapReady when the map style loads
         map.current.on('style.load', () => {
+          console.log("Map style loaded");
+          setMapReady(true);
+          
+          // Add markers for each tribal design once the map is ready
           if (map.current) {
-            map.current.setFog({
-              color: 'rgb(255, 255, 255)',
-              'high-color': 'rgb(200, 200, 225)',
-              'horizon-blend': 0.2,
+            tribalDesigns.forEach(tribe => {
+              const marker = document.createElement('div');
+              marker.className = 'cursor-pointer w-6 h-6 rounded-full bg-biophilic-earth border-2 border-white flex items-center justify-center text-white hover:bg-biophilic-clay transition-colors';
+              
+              // Create a new marker
+              new mapboxgl.Marker(marker)
+                .setLngLat([tribe.location[0], tribe.location[1]])
+                .setPopup(
+                  new mapboxgl.Popup({ offset: 25 })
+                    .setHTML(`<strong>${tribe.name}</strong><br>${tribe.country}`)
+                )
+                .addTo(map.current!);
+                
+              // Add click listener to the marker
+              marker.addEventListener('click', () => {
+                setSelectedTribe(tribe);
+              });
             });
-            setMapReady(true);
           }
         });
 
-        // Add markers for each tribal design
-        map.current.on('load', () => {
-          if (!map.current) return;
-          
-          tribalDesigns.forEach(tribe => {
-            const marker = document.createElement('div');
-            marker.className = 'cursor-pointer w-6 h-6 rounded-full bg-biophilic-earth border-2 border-white flex items-center justify-center text-white hover:bg-biophilic-clay transition-colors';
-            
-            // Create a new marker
-            new mapboxgl.Marker(marker)
-              .setLngLat([tribe.location[0], tribe.location[1]])
-              .setPopup(
-                new mapboxgl.Popup({ offset: 25 })
-                  .setHTML(`<strong>${tribe.name}</strong><br>${tribe.country}`)
-              )
-              .addTo(map.current!);
-              
-            // Add click listener to the marker
-            marker.addEventListener('click', () => {
-              setSelectedTribe(tribe);
-            });
-          });
+        map.current.on('error', (e) => {
+          console.error("Map error:", e);
+          setMapError("Failed to initialize map. Please check your connection and try again.");
         });
         
         // Trigger map resize to ensure it renders properly
@@ -196,6 +200,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ mapboxToken }) => {
         }, 200);
       } catch (error) {
         console.error("Error initializing map:", error);
+        setMapError("Failed to initialize map. Please check your connection and try again.");
       }
     }
     
@@ -206,7 +211,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ mapboxToken }) => {
         map.current = null;
       }
     };
-  }, []);
+  }, [mapboxToken]);
   
   return (
     <div className="relative w-full min-h-[70vh] bg-muted/20">
@@ -216,6 +221,24 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ mapboxToken }) => {
         className="w-full h-[70vh] rounded-lg shadow-lg"
         style={{ opacity: mapReady ? 1 : 0.7 }} // Visual indication that map is loading
       />
+      
+      {!mapReady && !mapError && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin h-8 w-8 border-4 border-biophilic-earth border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p>Loading map...</p>
+          </div>
+        </div>
+      )}
+      
+      {mapError && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="bg-white/90 p-8 rounded-lg shadow-lg text-center max-w-md">
+            <p className="text-red-500 mb-4">{mapError}</p>
+            <Button onClick={() => window.location.reload()}>Retry</Button>
+          </div>
+        </div>
+      )}
       
       {/* Selected Tribe Information */}
       {selectedTribe && (

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -14,21 +13,41 @@ import { getCaseStudyById } from '@/utils/database';
 import ImageWithFallback from '@/components/ImageWithFallback';
 import MasonryGallery from '@/components/MasonryGallery';
 
-// Generate dummy images if we don't have enough (minimum 9)
-const generateDummyImages = (baseImages: string[], minCount: number = 9) => {
+// Generate appropriate number of images with good fallbacks
+const generateGalleryImages = (baseImages: string[] = [], minCount: number = 9) => {
+  // Use our local fallback as default
+  const fallbackImage = '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png';
+  
+  // Add common high-quality fallbacks that will likely load
+  const fallbacks = [
+    'https://images.unsplash.com/photo-1531371484131-426e9f5e2b9b', // architectural
+    'https://images.unsplash.com/photo-1518780664697-55e3ad937233', // green spaces
+    'https://images.unsplash.com/photo-1459716354056-0a13dfe5a756', // plant structure
+    'https://images.unsplash.com/photo-1619336107270-f64b713b805b', // natural space
+    'https://images.unsplash.com/photo-1515524014198-60918752006c', // biophilic
+    fallbackImage
+  ];
+  
   if (!baseImages || baseImages.length === 0) {
-    return Array(minCount).fill('/assets/fallback-image.jpg');
+    return fallbacks.concat(Array(Math.max(0, minCount - fallbacks.length)).fill(fallbackImage));
   }
   
   if (baseImages.length >= minCount) {
     return baseImages;
   }
   
-  // Create a circular array by repeating the images until we have at least minCount
-  const result = [];
+  // If we have some images but less than minCount, add fallbacks
+  const result = [...baseImages];
+  
+  // Add fallbacks first
+  for (let i = 0; i < fallbacks.length && result.length < minCount; i++) {
+    result.push(fallbacks[i]);
+  }
+  
+  // If we still need more, repeat the original images
   let index = 0;
   while (result.length < minCount) {
-    result.push(baseImages[index % baseImages.length]);
+    result.push(baseImages[index % baseImages.length] || fallbackImage);
     index++;
   }
   
@@ -58,7 +77,7 @@ const CaseStudyDetail = () => {
   }
   
   // Prepare gallery images with minimum count
-  const galleryImages = generateDummyImages(caseStudy.images, 9);
+  const galleryImages = generateGalleryImages(caseStudy.images, 9);
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -89,7 +108,7 @@ const CaseStudyDetail = () => {
                 <ImageWithFallback 
                   src={caseStudy.images[0]} 
                   fallbackSrc1={caseStudy.images[1] || ''} 
-                  defaultFallback="/assets/fallback-image.jpg"
+                  defaultFallback="/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png"
                   alt={caseStudy.title}
                   className="w-full h-full object-cover"
                 />
