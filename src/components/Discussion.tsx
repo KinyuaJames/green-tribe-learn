@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -56,9 +55,9 @@ export const Discussion: React.FC<DiscussionProps> = ({
         content: msg.content,
         authorId: msg.userId,
         authorName: msg.userName,
-        authorImage: msg.userImage,
+        authorImage: msg.userImage || undefined, // Handle userImage properly
         timestamp: msg.createdAt,
-        likes: msg.likes || 0,
+        likes: msg.likes || 0, // Handle likes properly
         replies: []
       }))
     : posts;

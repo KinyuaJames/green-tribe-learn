@@ -7,6 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import ImageWithFallback from './ImageWithFallback';
 
+// Mapbox token
+const MAPBOX_TOKEN = 'pk.eyJ1Ijoiamlta20iLCJhIjoiY21hZTloMDE3MDR5ZTJxczU5b2Y2Z2QwNSJ9.e_f21CLkuIeY6fLQ4fuSkA';
+
 // Tribal design data
 const tribalDesigns = [
   {
@@ -131,9 +134,9 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ mapboxToken }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [selectedTribe, setSelectedTribe] = useState<typeof tribalDesigns[0] | null>(null);
-  const [isMapTokenDialogOpen, setIsMapTokenDialogOpen] = useState<boolean>(!mapboxToken);
+  const [isMapTokenDialogOpen, setIsMapTokenDialogOpen] = useState<boolean>(false);
   const [userMapToken, setUserMapToken] = useState<string>(mapboxToken || '');
-  const [activeMapToken, setActiveMapToken] = useState<string>(mapboxToken || '');
+  const [activeMapToken, setActiveMapToken] = useState<string>(mapboxToken || MAPBOX_TOKEN);
   
   // Initialize map when container is available and token is set
   useEffect(() => {
@@ -165,9 +168,9 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ mapboxToken }) => {
           const marker = document.createElement('div');
           marker.className = 'cursor-pointer w-6 h-6 rounded-full bg-biophilic-earth border-2 border-white flex items-center justify-center text-white hover:bg-biophilic-clay transition-colors';
           
-          // Create a new marker
+          // Create a new marker with the coordinates as a tuple to satisfy TypeScript
           new mapboxgl.Marker(marker)
-            .setLngLat(tribe.location)
+            .setLngLat([tribe.location[0], tribe.location[1]] as [number, number])
             .setPopup(
               new mapboxgl.Popup({ offset: 25 })
                 .setHTML(`<strong>${tribe.name}</strong><br>${tribe.country}`)
@@ -194,6 +197,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ mapboxToken }) => {
     };
   }, [activeMapToken]);
   
+  // Handle token submission from dialog (rarely needed since we now have a default token)
   const handleTokenSubmit = () => {
     if (userMapToken) {
       setActiveMapToken(userMapToken);
@@ -203,7 +207,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ mapboxToken }) => {
   
   return (
     <div className="relative w-full min-h-[70vh] bg-muted/20">
-      {/* Map Token Dialog */}
+      {/* Map Token Dialog - only shown if there's an issue with the default token */}
       <Dialog open={isMapTokenDialogOpen} onOpenChange={setIsMapTokenDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -242,7 +246,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ mapboxToken }) => {
         style={{ display: activeMapToken ? 'block' : 'none' }}
       />
       
-      {/* No Token Warning */}
+      {/* No Token Warning - unlikely to be shown now */}
       {!activeMapToken && (
         <div className="absolute inset-0 flex items-center justify-center bg-muted/10 rounded-lg">
           <Card className="w-full max-w-md">

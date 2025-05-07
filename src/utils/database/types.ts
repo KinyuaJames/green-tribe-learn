@@ -1,149 +1,53 @@
-
-// Basic types for our database objects
-
-export interface Badge {
-  id: string;
-  title: string;
-  description: string;
-  image?: string;
-  imageUrl: string;
-  dateEarned?: string;
-  earnedDate: string;
-}
-
-export interface Certificate {
-  id: string;
-  courseId: string;
-  courseName: string;
-  courseTitle?: string;
-  issueDate: string;
-  completionDate: string;
-  certificateUrl: string;
-}
-
-export interface User {
-  id: string;
-  email: string;
-  password: string;
-  name?: string;
-  fullName?: string;
-  avatar?: string;
-  enrolledCourses: string[];
-  completedLessons: string[];
-  quizAttempts: QuizAttempt[];
-  studyGallery: StudyItem[];
-  role: 'student' | 'instructor' | 'admin';
-  badges: Badge[];
-  certificates: Certificate[];
-  completedQuizzes?: string[];
-  createdAt?: string;
-}
-
 export interface Course {
   id: string;
   title: string;
   description: string;
-  instructor: string;
-  instructorImage?: string;
-  price: number;
-  isFree: boolean;
-  duration: string;
-  level?: string;
-  rating?: number;
-  studentsCount?: number;
-  image: string;
-  isLocked: boolean;
-  isFeatured: boolean;
+  imageUrl: string;
   modules: Module[];
-  resources?: Resource[];
-  tags?: string[];
+  createdAt: string;
 }
 
 export interface Module {
   id: string;
   title: string;
-  description?: string;
-  isLocked: boolean;
+  description: string;
   lessons: Lesson[];
 }
 
 export interface Lesson {
   id: string;
   title: string;
-  description?: string;
-  type: 'video' | 'text' | 'quiz' | 'assignment';
-  content?: string;
-  duration?: string;
-  isLocked: boolean;
-  videoUrl?: string;
-  thumbnailUrl?: string;
-  quiz?: Quiz;
-  requiresAudioFeedback?: boolean; // For lessons requiring audio feedback
-}
-
-export interface Quiz {
-  id: string;
-  title: string;
-  description?: string;
-  questions: QuizQuestion[];
-  passingScore: number;
-  timeLimit?: number; // in seconds
-}
-
-export interface QuizQuestion {
-  id: string;
-  text: string;
-  options: QuizOption[];
-  correctOptionId: string;
-}
-
-export interface QuizOption {
-  id: string;
-  text: string;
-}
-
-export interface QuizAttempt {
-  quizId: string;
-  score: number;
-  totalQuestions: number;
-  passed: boolean;
-  date: string;
-}
-
-export interface Resource {
-  id: string;
-  title: string;
-  description: string;
-  type: 'pdf' | 'video' | 'audio' | 'link';
-  url: string;
+  content: string;
+  resources: Resource[];
+  studyItems: StudyItem[];
 }
 
 export interface StudyItem {
   id: string;
   title: string;
-  type: 'image' | 'note' | 'voice';
-  content: string;
-  thumbnail?: string;
+  imageUrl: string;
+  description: string;
   createdAt: string;
-  moduleId?: string;
-  moduleName?: string;
-  courseId?: string;
-  lessonId?: string;
+  type: string;
+  content: string;
 }
 
-export interface CaseStudy {
+export interface Resource {
   id: string;
   title: string;
+  type: "link" | "audio" | "video" | "pdf";
+  url: string;
   description: string;
-  location: string;
-  year: number;
-  images: string[];
-  tags: string[];
-  author: string;
-  authorId: string;
-  featured: boolean;
-  published: boolean;
-  createdAt: string;
+  category: string;
+}
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  image?: string;
+  role: 'student' | 'instructor' | 'admin';
+  courses: Course[];
 }
 
 export interface DiscussionMessage {
@@ -151,9 +55,11 @@ export interface DiscussionMessage {
   threadId: string;
   userId: string;
   userName: string;
-  userRole: 'student' | 'instructor';
+  userImage?: string;
+  userRole: 'student' | 'instructor' | 'admin';
   content: string;
   createdAt: string;
+  likes?: number;
 }
 
 export interface DiscussionThread {
@@ -168,21 +74,11 @@ export interface DiscussionThread {
   messages: DiscussionMessage[];
 }
 
-export interface StudyNoteInput {
-  title: string;
-  content: string;
-  type: 'image' | 'note' | 'voice';
-  moduleId?: string;
-  moduleName?: string;
-  courseId?: string;
-  lessonId?: string;
-}
-
 export interface ThreadInput {
   courseId: string;
+  title: string;
   studentId: string;
   studentName: string;
-  title: string;
   message: string;
 }
 
@@ -190,6 +86,6 @@ export interface MessageInput {
   threadId: string;
   userId: string;
   userName: string;
-  userRole: 'student' | 'instructor';
   content: string;
+  userRole: 'student' | 'instructor' | 'admin';
 }

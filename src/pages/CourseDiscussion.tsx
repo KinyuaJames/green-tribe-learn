@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -64,12 +63,19 @@ const CourseDiscussion = () => {
         title: newThreadTitle,
         studentId: currentUser.id,
         studentName: currentUser.name || currentUser.email,
-        message: initialMessage,
-        userRole: 'student'
+        message: initialMessage
       });
       
-      // TypeScript-safe way to update the array
-      setDiscussions(prevDiscussions => [...prevDiscussions, newThread]);
+      // Get the newly created thread
+      const updatedDiscussions = [...discussions];
+      const createdThread = getCourseDiscussions(courseId || '').find(thread => thread.id === newThread);
+      
+      // Add the new thread to discussions state if found
+      if (createdThread) {
+        updatedDiscussions.push(createdThread);
+        setDiscussions(updatedDiscussions);
+      }
+      
       setNewThreadTitle('');
       toast.success('Discussion thread created successfully!');
       
@@ -95,7 +101,7 @@ const CourseDiscussion = () => {
     
     try {
       // Add the discussion message with proper types
-      const newMessageObj = addDiscussionMessage({
+      const messageId = addDiscussionMessage({
         threadId,
         userId: currentUser.id,
         userName: currentUser.name || currentUser.email,
@@ -103,18 +109,11 @@ const CourseDiscussion = () => {
         userRole: 'student'
       });
       
-      // Update the discussions state in a type-safe way
-      setDiscussions(prevDiscussions => 
-        prevDiscussions.map(thread => {
-          if (thread.id === threadId) {
-            return {
-              ...thread,
-              messages: [...thread.messages, newMessageObj]
-            };
-          }
-          return thread;
-        })
-      );
+      // Refresh discussions to get the updated thread with the new message
+      if (courseId) {
+        const updatedDiscussions = getCourseDiscussions(courseId);
+        setDiscussions(updatedDiscussions);
+      }
       
       setNewMessage('');
       toast.success('Message added successfully!');
