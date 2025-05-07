@@ -46,7 +46,7 @@
   object-fit: cover;
 }
 
-/* Keep gallery images flexible */
+/* Keep gallery images flexible for masonry layout */
 .gallery-image {
   width: 100%;
   height: auto;
@@ -77,4 +77,43 @@
 
 .case-study-image:hover {
   transform: scale(1.05);
+}
+
+/* Fallback image system */
+img {
+  transition: opacity 0.3s ease;
+}
+
+img.with-fallback:not([src=""]):not([src="undefined"]):not([src="null"]) {
+  opacity: 1;
+}
+
+img.with-fallback[src=""], 
+img.with-fallback[src="undefined"], 
+img.with-fallback[src="null"],
+img.with-fallback.error {
+  opacity: 0;
+}
+
+/* Masonry gallery styling */
+.masonry-gallery {
+  column-count: 1;
+  column-gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .masonry-gallery {
+    column-count: 2;
+  }
+}
+
+@media (min-width: 1024px) {
+  .masonry-gallery {
+    column-count: 3;
+  }
+}
+
+.masonry-item {
+  break-inside: avoid;
+  margin-bottom: 1rem;
 }

@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Course, getCourses } from '@/utils/database';
 import { useAuth } from '@/contexts/AuthContext';
+import ImageWithFallback from './ImageWithFallback';
+import '../styles/image-styles.css';
 
 const CourseCard = ({ course, isEnrolled }: { course: Course, isEnrolled: boolean }) => {
   const { currentUser } = useAuth();
@@ -16,10 +18,12 @@ const CourseCard = ({ course, isEnrolled }: { course: Course, isEnrolled: boolea
   return (
     <Card className="overflow-hidden border-biophilic-sand hover:shadow-md transition-shadow">
       <div className="aspect-video overflow-hidden relative">
-        <img 
+        <ImageWithFallback 
           src={course.image} 
+          fallbackSrc1="https://images.unsplash.com/photo-1649972904349-6e44c42644a7"
+          fallbackSrc2="https://images.unsplash.com/photo-1488590528505-98d2b5aba04b"
           alt={course.title} 
-          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+          className="course-card-image"
         />
         {showFreeBadge && (
           <div className="absolute top-2 right-2">

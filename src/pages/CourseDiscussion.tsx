@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -7,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from '@/components/ui/breadcrumb';
-import { ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -16,14 +16,14 @@ import {
   createDiscussionThread,
   addDiscussionMessage
 } from '@/utils/database';
-import { DiscussionMessage as DiscussionMessageType, DiscussionThread as DiscussionThreadType, Course } from '@/utils/database/types';
+import { DiscussionMessage, DiscussionThread, Course } from '@/utils/database/types';
 
 const CourseDiscussion = () => {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const [course, setCourse] = useState<Course | undefined>(undefined);
-  const [discussions, setDiscussions] = useState<DiscussionThreadType[]>([]);
+  const [discussions, setDiscussions] = useState<DiscussionThread[]>([]);
   const [newThreadTitle, setNewThreadTitle] = useState('');
   const [newMessage, setNewMessage] = useState('');
   const [isCreatingThread, setIsCreatingThread] = useState(false);
@@ -55,14 +55,15 @@ const CourseDiscussion = () => {
     setIsCreatingThread(true);
     
     try {
-      // Create the discussion thread
+      // Create the discussion thread with proper types
       const newThread = createDiscussionThread({
-        courseId,
+        courseId: courseId || '',
         title: newThreadTitle,
-        authorId: currentUser.id,
-        author: currentUser.name || currentUser.email
+        studentId: currentUser.id,
+        studentName: currentUser.name || currentUser.email
       });
       
+      // TypeScript-safe way to update the array
       setDiscussions(prevDiscussions => [...prevDiscussions, newThread]);
       setNewThreadTitle('');
       toast.success('Discussion thread created successfully!');
@@ -88,35 +89,27 @@ const CourseDiscussion = () => {
     setIsAddingMessage(true);
     
     try {
-      // Add the discussion message
-      addDiscussionMessage({
+      // Add the discussion message with proper types
+      const newMessageObj = addDiscussionMessage({
         threadId,
-        authorId: currentUser.id,
-        author: currentUser.name || currentUser.email,
-        message: newMessage
+        userId: currentUser.id,
+        userName: currentUser.name || currentUser.email,
+        content: newMessage
       });
       
-      // Update the discussions state
-      const updatedDiscussions = discussions.map(thread => {
-        if (thread.id === threadId) {
-          return {
-            ...thread,
-            messages: [
-              ...thread.messages,
-              {
-                id: `msg-${thread.messages.length + 1}`,
-                authorId: currentUser.id,
-                author: currentUser.name || currentUser.email,
-                message: newMessage,
-                createdAt: new Date().toISOString()
-              }
-            ]
-          };
-        }
-        return thread;
-      });
+      // Update the discussions state in a type-safe way
+      setDiscussions(prevDiscussions => 
+        prevDiscussions.map(thread => {
+          if (thread.id === threadId) {
+            return {
+              ...thread,
+              messages: [...thread.messages, newMessageObj]
+            };
+          }
+          return thread;
+        })
+      );
       
-      setDiscussions(updatedDiscussions);
       setNewMessage('');
       toast.success('Message added successfully!');
       
@@ -219,11 +212,11 @@ const CourseDiscussion = () => {
                     {thread.title}
                   </h3>
                   <p className="text-sm text-muted-foreground mb-2">
-                    Started by {thread.author}
+                    Started by {thread.studentName}
                   </p>
                   
                   <Discussion
-                    messages={thread.messages}
+                    discussionMessages={thread.messages}
                   />
                   
                   <div className="mt-4 flex flex-col gap-2">

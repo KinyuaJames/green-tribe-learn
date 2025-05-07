@@ -11,6 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { ArrowLeft } from 'lucide-react';
 import { getCaseStudyById } from '@/utils/database';
+import ImageWithFallback from '@/components/ImageWithFallback';
+import MasonryGallery from '@/components/MasonryGallery';
 
 const CaseStudyDetail = () => {
   const { caseStudyId } = useParams();
@@ -60,8 +62,10 @@ const CaseStudyDetail = () => {
               </div>
               
               <div className="aspect-video mb-8 rounded-lg overflow-hidden">
-                <img 
+                <ImageWithFallback 
                   src={caseStudy.images[0]} 
+                  fallbackSrc1={caseStudy.images[1] || caseStudy.images[0]} 
+                  fallbackSrc2="/placeholder.svg"
                   alt={caseStudy.title}
                   className="w-full h-full object-cover"
                 />
@@ -85,22 +89,7 @@ const CaseStudyDetail = () => {
                 </TabsContent>
                 
                 <TabsContent value="gallery" className="mt-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {caseStudy.images.map((image, index) => (
-                      <div 
-                        key={index} 
-                        className={`rounded-lg overflow-hidden ${
-                          index === 0 && caseStudy.images.length % 2 !== 0 ? 'md:col-span-2' : ''
-                        }`}
-                      >
-                        <img 
-                          src={image} 
-                          alt={`${caseStudy.title} - Image ${index + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    ))}
-                  </div>
+                  <MasonryGallery images={caseStudy.images} columnCount={2} />
                 </TabsContent>
                 
                 <TabsContent value="insights" className="mt-6">

@@ -13,6 +13,7 @@ import LessonDetail from "./pages/LessonDetail";
 import CourseDiscussion from "./pages/CourseDiscussion";
 import CaseStudyGallery from "./pages/CaseStudyGallery";
 import CaseStudyDetail from "./pages/CaseStudyDetail";
+import IndigenousMap from "./pages/IndigenousMap";
 import Tribe from "./pages/Tribe";
 import About from "./pages/About";
 import Login from "./pages/Login";
@@ -60,6 +61,7 @@ const App = () => {
               } />
               <Route path="/case-studies" element={<CaseStudyGallery />} />
               <Route path="/case-study/:caseStudyId" element={<CaseStudyDetail />} />
+              <Route path="/indigenous-map" element={<IndigenousMap />} />
               <Route path="/tribe" element={<Tribe />} />
               <Route path="/about" element={<About />} />
               <Route path="/login" element={<Login />} />
