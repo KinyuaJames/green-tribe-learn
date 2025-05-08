@@ -16,113 +16,113 @@ const tribalDesigns = [
   {
     id: 'dogon',
     name: 'Dogon',
-    location: [3.5, 13.9],
+    location: [3.5, 13.9] as [number, number], // Type assertion as [number, number]
     country: 'Mali',
     description: 'The Dogon people are known for their stone and mud architecture, including cliff dwellings, granaries with thatched roofs, and meetinghouses with intricately carved wooden doors and posts.',
     materials: ['Clay', 'Stone', 'Thatch'],
     practices: ['Cliff-side construction', 'Toguna (meeting places)', 'Symbolic layout'],
     images: [
-      'https://images.unsplash.com/photo-1523531294919-4bcd7c65e216',
-      'https://images.unsplash.com/photo-1495562569060-2eec283d3391',
-      'https://images.unsplash.com/photo-1497106636505-4f8520681cb5'
+      '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png',
+      '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png',
+      '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png'
     ]
   },
   {
     id: 'ndebele',
     name: 'Ndebele',
-    location: [29.4, -25.8],
+    location: [29.4, -25.8] as [number, number],
     country: 'South Africa',
     description: 'The Ndebele people create vivid geometric patterns on their homes, using bright colors derived from natural pigments. These designs are not only decorative but also communicate cultural identity and social status.',
     materials: ['Natural pigments', 'Clay', 'Adobe'],
     practices: ['Geometric painting', 'Symbolic patterns', 'Beadwork integration'],
     images: [
-      'https://images.unsplash.com/photo-1541972082277-0f5df35bb58a',
-      'https://images.unsplash.com/photo-1536590158209-dd9755229bbe',
-      'https://images.unsplash.com/photo-1534430480872-3498386e7856'
+      '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png',
+      '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png',
+      '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png'
     ]
   },
   {
     id: 'zulu',
     name: 'Zulu',
-    location: [31.5, -28.5],
+    location: [31.5, -28.5] as [number, number],
     country: 'South Africa',
     description: 'The Zulu people build domed structures (indlu) made from a framework of poles covered with thatch or grass mats. Their settlements (umuzi) are typically circular in layout with a central cattle kraal.',
     materials: ['Grass', 'Reeds', 'Wood'],
     practices: ['Dome construction', 'Circular settlement layout', 'Cattle kraal integration'],
     images: [
-      'https://images.unsplash.com/photo-1562733881-b06bfa74e807',
-      'https://images.unsplash.com/photo-1575999502951-4ab25b5ca889',
-      'https://images.unsplash.com/photo-1465056836041-7f43ac27dcb5'
+      '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png',
+      '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png',
+      '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png'
     ]
   },
   {
     id: 'maasai',
     name: 'Maasai',
-    location: [36.8, -1.3],
+    location: [36.8, -1.3] as [number, number],
     country: 'Kenya & Tanzania',
     description: 'The Maasai build homes (inkajijik) using a frame of timber poles interwoven with a lattice of smaller branches, which is then plastered with a mix of mud, grass, cow dung, and ash.',
     materials: ['Wood frame', 'Cow dung', 'Clay', 'Ash'],
     practices: ['Circular layout', 'Practical construction', 'Natural insulation'],
     images: [
-      'https://images.unsplash.com/photo-1604840633086-3a92662c8f84',
-      'https://images.unsplash.com/photo-1596470377364-8e604346e1b4',
-      'https://images.unsplash.com/photo-1504432842032-3361de0fcb69'
+      '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png',
+      '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png',
+      '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png'
     ]
   },
   {
     id: 'ashanti',
     name: 'Ashanti',
-    location: [-1.6, 6.7],
+    location: [-1.6, 6.7] as [number, number],
     country: 'Ghana',
     description: 'The Ashanti people are known for their rectangular structures with steep thatched roofs. Traditional buildings feature intricate geometric designs and are built using a timber frame with mud filling.',
     materials: ['Timber frame', 'Clay', 'Thatch'],
     practices: ['Courtyard design', 'Intricate relief patterns', 'Symbolic motifs'],
     images: [
-      'https://images.unsplash.com/photo-1578761617597-5e8082f68be1',
-      'https://images.unsplash.com/photo-1598018553943-5650d5c0b82f',
-      'https://images.unsplash.com/photo-1547480053-7d174f67b557'
+      '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png',
+      '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png',
+      '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png'
     ]
   },
   {
     id: 'somali',
     name: 'Somali',
-    location: [45.3, 2.0],
+    location: [45.3, 2.0] as [number, number],
     country: 'Somalia',
     description: 'The Somali nomadic hut (aqal) is a portable dome-shaped structure made with bent saplings covered with woven mats, grass, or hides. These structures can be dismantled and reassembled quickly as needed.',
     materials: ['Bent saplings', 'Woven mats', 'Animal hides', 'Grass'],
     practices: ['Portable architecture', 'Dome structure', 'Natural ventilation'],
     images: [
-      'https://images.unsplash.com/photo-1563889958749-625da26ed355',
-      'https://images.unsplash.com/photo-1590422749897-47726da9fa7d',
-      'https://images.unsplash.com/photo-1531219572328-a0171b4448a3'
+      '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png',
+      '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png',
+      '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png'
     ]
   },
   {
     id: 'nubian',
     name: 'Nubian',
-    location: [32.9, 22.0],
+    location: [32.9, 22.0] as [number, number],
     country: 'Egypt & Sudan',
     description: 'Nubian architecture is characterized by colorful geometric patterns on house facades and distinctive vault designs. Traditionally built using mud brick, these structures remain cool in hot climates.',
     materials: ['Mud brick', 'Natural pigments', 'Palm wood'],
     practices: ['Vault construction', 'Geometric facades', 'Climate adaptation'],
     images: [
-      'https://images.unsplash.com/photo-1583248127512-c7a73206249c',
-      'https://images.unsplash.com/photo-1529313052929-fd9ca394b378',
-      'https://images.unsplash.com/photo-1548248823-ce16a73b6d49'
+      '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png',
+      '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png',
+      '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png'
     ]
   },
   {
     id: 'berber',
     name: 'Berber',
-    location: [-5.8, 31.8],
+    location: [-5.8, 31.8] as [number, number],
     country: 'Morocco & Algeria',
     description: 'The Berber people build earthen structures that blend into the landscape. Their homes often include flat roofs for sleeping in hot summer months and small windows for climate control.',
     materials: ['Rammed earth', 'Stone', 'Clay'],
     practices: ['Terraced construction', 'Climate adaptation', 'Communal spaces'],
     images: [
-      'https://images.unsplash.com/photo-1548013146-72479768bada',
-      'https://images.unsplash.com/photo-1604169359756-3296e4137194',
-      'https://images.unsplash.com/photo-1531761535209-180857b5464f'
+      '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png',
+      '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png',
+      '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png'
     ]
   }
 ];
@@ -140,17 +140,22 @@ const InteractiveMap: React.FC = () => {
       try {
         console.log("Initializing Mapbox map with token...");
         
-        // Set the access token directly
+        // Set the access token
         mapboxgl.accessToken = MAPBOX_TOKEN;
         
-        // Create new map instance
+        // Debug check for token
+        console.log("Mapbox token set:", mapboxgl.accessToken);
+        
+        // Create new map instance with a more compatible style
         map.current = new mapboxgl.Map({
           container: mapContainer.current,
-          style: 'mapbox://styles/mapbox/satellite-streets-v12',
+          style: 'mapbox://styles/mapbox/outdoors-v12', // Changed to a more reliable style
           center: [19.0, 4.0], // Center on Africa
           zoom: 2.5,
-          projection: 'mercator' // Use mercator instead of globe for better compatibility
+          projection: 'mercator' // Use mercator for better compatibility
         });
+
+        console.log("Map instance created");
 
         // Add navigation controls
         map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
@@ -160,26 +165,35 @@ const InteractiveMap: React.FC = () => {
           console.log("Map loaded successfully");
           setMapReady(true);
           
+          // Force a resize to ensure the map renders correctly
           if (map.current) {
+            map.current.resize();
+            
             // Add markers for each tribal design
             tribalDesigns.forEach(tribe => {
-              // Create marker element
-              const marker = document.createElement('div');
-              marker.className = 'cursor-pointer w-6 h-6 rounded-full bg-biophilic-earth border-2 border-white flex items-center justify-center text-white hover:bg-biophilic-clay transition-colors';
-              
-              // Create a new marker
-              new mapboxgl.Marker(marker)
-                .setLngLat(tribe.location)
-                .setPopup(
-                  new mapboxgl.Popup({ offset: 25 })
-                    .setHTML(`<strong>${tribe.name}</strong><br>${tribe.country}`)
-                )
-                .addTo(map.current!);
+              try {
+                // Create marker element
+                const marker = document.createElement('div');
+                marker.className = 'cursor-pointer w-6 h-6 rounded-full bg-biophilic-earth border-2 border-white flex items-center justify-center text-white hover:bg-biophilic-clay transition-colors';
                 
-              // Add click listener to the marker
-              marker.addEventListener('click', () => {
-                setSelectedTribe(tribe);
-              });
+                console.log(`Creating marker for ${tribe.name} at location:`, tribe.location);
+                
+                // Create a new marker
+                new mapboxgl.Marker(marker)
+                  .setLngLat(tribe.location)
+                  .setPopup(
+                    new mapboxgl.Popup({ offset: 25 })
+                      .setHTML(`<strong>${tribe.name}</strong><br>${tribe.country}`)
+                  )
+                  .addTo(map.current!);
+                  
+                // Add click listener to the marker
+                marker.addEventListener('click', () => {
+                  setSelectedTribe(tribe);
+                });
+              } catch (err) {
+                console.error(`Error creating marker for ${tribe.name}:`, err);
+              }
             });
           }
         });

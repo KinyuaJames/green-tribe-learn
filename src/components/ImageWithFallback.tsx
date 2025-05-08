@@ -10,14 +10,8 @@ interface ImageWithFallbackProps extends React.ImgHTMLAttributes<HTMLImageElemen
   className?: string;
 }
 
-// Updated default fallback image path with both options for reliability
+// Default fallback image path
 const defaultPlaceholder = "/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png";
-// Alternate fallbacks from Unsplash (very reliable)
-const unsplashFallbacks = [
-  "https://images.unsplash.com/photo-1518005020951-eccb494ad742",
-  "https://images.unsplash.com/photo-1501854140801-50d01698950b",
-  "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07"
-];
 
 const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
   src,
@@ -64,18 +58,6 @@ const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
     } else if (fallbackIndex === 1 && fallbackSrc2) {
       setImgSrc(fallbackSrc2);
       setFallbackIndex(2);
-    } else if (fallbackIndex < 5) {
-      // Try unsplash fallbacks before using the default
-      const unsplashIndex = fallbackIndex - 2;
-      if (unsplashIndex >= 0 && unsplashIndex < unsplashFallbacks.length) {
-        console.log(`Trying Unsplash fallback: ${unsplashFallbacks[unsplashIndex]}`);
-        setImgSrc(unsplashFallbacks[unsplashIndex]);
-        setFallbackIndex(fallbackIndex + 1);
-      } else {
-        console.log(`Using default fallback: ${defaultFallback}`);
-        setImgSrc(defaultFallback);
-        setHasError(true);
-      }
     } else {
       console.log(`Using default fallback: ${defaultFallback}`);
       setImgSrc(defaultFallback);

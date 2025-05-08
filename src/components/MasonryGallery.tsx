@@ -11,17 +11,17 @@ interface MasonryGalleryProps {
   columnCount?: number;
 }
 
-// Array of reliable fallback images from Unsplash
+// Array of reliable fallback images
 const fallbackImages = [
-  'https://images.unsplash.com/photo-1497106636505-4f8520681cb5',
-  'https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07',
-  'https://images.unsplash.com/photo-1483058712412-4245e9b90334',
-  'https://images.unsplash.com/photo-1465056836041-7f43ac27dcb5',
-  'https://images.unsplash.com/photo-1490730141103-6cac27aaab94',
-  'https://images.unsplash.com/photo-1501854140801-50d01698950b',
-  'https://images.unsplash.com/photo-1518005020951-eccb494ad742',
-  'https://images.unsplash.com/photo-1433086966358-54859d0ed716',
-  'https://images.unsplash.com/photo-1497604401993-f2e922e5cb0a'
+  '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png',
+  '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png',
+  '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png',
+  '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png',
+  '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png',
+  '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png',
+  '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png',
+  '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png',
+  '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png'
 ];
 
 const MasonryGallery: React.FC<MasonryGalleryProps> = ({ 
@@ -122,7 +122,7 @@ const MasonryGallery: React.FC<MasonryGalleryProps> = ({
         {displayImages.map((image, index) => (
           <div className="masonry-item" key={index}>
             <div 
-              className="w-full overflow-hidden rounded-md cursor-pointer transition-transform hover:shadow-lg relative group"
+              className="w-full overflow-hidden rounded-md cursor-pointer transition-transform hover:shadow-lg relative group mb-4"
               onClick={() => openLightbox(index)}
             >
               <ImageWithFallback
@@ -150,23 +150,25 @@ const MasonryGallery: React.FC<MasonryGalleryProps> = ({
       {/* Enhanced Lightbox with fullscreen blurred background of next image */}
       {lightboxOpen && (
         <div 
-          className={`fixed inset-0 z-50 flex items-center justify-center ${animatingClosure ? 'animate-fade-out' : 'animate-scale-up'}`}
+          className={`fixed inset-0 z-50 flex items-center justify-center ${animatingClosure ? 'animate-fade-out' : 'animate-zoom-in'}`}
           onClick={closeLightbox}
         >
           {/* Background image (blurred next image) */}
           <div 
-            className="absolute inset-0 opacity-30 transition-opacity duration-500 ease-in-out" 
+            className="absolute inset-0 opacity-80" 
             style={{
               backgroundImage: `url(${displayImages[getNextImageIndex()] || fallbackImages[0]})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               filter: 'blur(20px)',
               transform: 'scale(1.1)', // Slightly larger to avoid seeing edges during blur
+              backgroundColor: 'rgba(0, 0, 0, 0.8)', // Dark overlay
+              backgroundBlendMode: 'overlay',
             }}
           />
           
-          {/* Overlay for better contrast */}
-          <div className="absolute inset-0 bg-black/50"></div>
+          {/* Additional dark overlay for better visibility */}
+          <div className="absolute inset-0 bg-black/80"></div>
           
           {/* Main content */}
           <div 
@@ -205,59 +207,59 @@ const MasonryGallery: React.FC<MasonryGalleryProps> = ({
                   className="max-w-full max-h-[80vh] object-contain mx-auto rounded-lg shadow-xl"
                 />
               </div>
-              
-              {/* Navigation buttons with enhanced styling */}
-              <button 
-                onClick={prevImage}
-                className="absolute top-1/2 left-4 -translate-y-1/2 bg-white/30 hover:bg-white/60 rounded-full p-4 transition-all transform hover:scale-110 backdrop-blur-sm"
-                aria-label="Previous image"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="white" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              
-              <button 
-                onClick={nextImage}
-                className="absolute top-1/2 right-4 -translate-y-1/2 bg-white/30 hover:bg-white/60 rounded-full p-4 transition-all transform hover:scale-110 backdrop-blur-sm"
-                aria-label="Next image"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="white" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-              
-              {/* Close button */}
-              <button 
-                onClick={closeLightbox}
-                className="absolute top-4 right-4 bg-white/30 hover:bg-white/60 rounded-full p-3 transition-all transform hover:scale-110 backdrop-blur-sm"
-                aria-label="Close lightbox"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="white" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-              
-              {/* Download button */}
-              <button 
-                onClick={(e) => handleDownload(e, displayImages[activeImageIndex])}
-                className="absolute bottom-4 right-4 bg-white/30 hover:bg-white/60 rounded-full p-3 transition-all transform hover:scale-110 backdrop-blur-sm flex items-center justify-center"
-                aria-label="Download image"
-              >
-                <Download className="h-6 w-6 text-white" />
-              </button>
-              
-              {/* Image counter and badge */}
-              <div className="absolute bottom-4 left-4 flex items-center space-x-2">
-                <Badge className="bg-white/30 text-white backdrop-blur-sm px-4 py-1.5 hover:bg-white/40 transition-colors text-lg">
-                  {activeImageIndex + 1} / {displayImages.length}
-                </Badge>
-                
-                <Badge variant="outline" className="bg-black/40 text-white backdrop-blur-sm border-white/30 px-3 py-1.5">
-                  Gallery
-                </Badge>
-              </div>
             </div>
+          </div>
+          
+          {/* Fixed position navigation buttons */}
+          <button 
+            onClick={prevImage}
+            className="fixed left-8 top-1/2 -translate-y-1/2 bg-white/30 hover:bg-white/60 rounded-full p-4 transition-all transform hover:scale-110 backdrop-blur-sm z-60"
+            aria-label="Previous image"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="white" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          
+          <button 
+            onClick={nextImage}
+            className="fixed right-8 top-1/2 -translate-y-1/2 bg-white/30 hover:bg-white/60 rounded-full p-4 transition-all transform hover:scale-110 backdrop-blur-sm z-60"
+            aria-label="Next image"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="white" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+          
+          {/* Fixed close button */}
+          <button 
+            onClick={closeLightbox}
+            className="fixed top-8 right-8 bg-white/30 hover:bg-white/60 rounded-full p-3 transition-all transform hover:scale-110 backdrop-blur-sm z-60"
+            aria-label="Close lightbox"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="white" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          
+          {/* Fixed download button */}
+          <button 
+            onClick={(e) => handleDownload(e, displayImages[activeImageIndex])}
+            className="fixed bottom-8 right-8 bg-white/30 hover:bg-white/60 rounded-full p-3 transition-all transform hover:scale-110 backdrop-blur-sm z-60 flex items-center justify-center"
+            aria-label="Download image"
+          >
+            <Download className="h-6 w-6 text-white" />
+          </button>
+          
+          {/* Fixed image counter and badge */}
+          <div className="fixed bottom-8 left-8 flex items-center space-x-2 z-60">
+            <Badge className="bg-white/30 text-white backdrop-blur-sm px-4 py-1.5 hover:bg-white/40 transition-colors text-lg">
+              {activeImageIndex + 1} / {displayImages.length}
+            </Badge>
+            
+            <Badge variant="outline" className="bg-black/40 text-white backdrop-blur-sm border-white/30 px-3 py-1.5">
+              Gallery
+            </Badge>
           </div>
         </div>
       )}

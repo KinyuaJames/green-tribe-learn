@@ -52,7 +52,8 @@ export interface StudyItem {
   createdAt: string;
   type: string;
   content: string;
-  moduleId?: string; // Adding this to fix type errors
+  moduleId?: string; 
+  moduleName?: string; // Adding this to fix type errors
 }
 
 export interface Resource {
@@ -77,11 +78,11 @@ export interface User {
   completedLessons?: string[];
   quizAttempts?: QuizAttempt[];
   studyGallery?: StudyItem[];
-  // Adding missing properties that are used in the application
   badges?: Badge[];
   certificates?: Certificate[];
   completedQuizzes?: string[];
   avatar?: string;
+  createdAt?: string; // Added to fix type errors
 }
 
 export interface DiscussionMessage {
@@ -130,17 +131,23 @@ export interface Quiz {
   questions: QuizQuestion[];
   timeLimit?: number; // in minutes
   passingScore: number;
-  description?: string; // Added to fix build errors
+  description?: string;
 }
 
 export interface QuizQuestion {
   id: string;
   question: string;
-  options: string[];
+  options: QuizOption[];
   correctAnswerIndex: number;
   explanation?: string;
-  correctOptionId?: string; // Added to fix build errors
-  text?: string; // Added to fix build errors
+  correctOptionId?: string;
+  text?: string;
+}
+
+// Added to fix type errors
+export interface QuizOption {
+  id: string;
+  text: string;
 }
 
 export interface QuizAttempt {
@@ -152,7 +159,8 @@ export interface QuizAttempt {
   completed: boolean;
   startedAt: string;
   completedAt?: string;
-  totalQuestions?: number; // Added to fix build errors
+  totalQuestions?: number;
+  passed?: boolean; // Added to fix type errors
 }
 
 export interface Certificate {
@@ -162,8 +170,8 @@ export interface Certificate {
   issueDate: string;
   completionDate: string;
   certificateUrl: string;
-  courseTitle?: string; // Added to fix build errors
-  courseName?: string; // Added to fix build errors
+  courseTitle?: string;
+  courseName?: string;
 }
 
 export interface Badge {
@@ -173,8 +181,8 @@ export interface Badge {
   imageUrl: string;
   criteria: string;
   dateEarned: string;
-  image?: string; // Added to fix build errors
-  earnedDate?: string; // Added to fix build errors
+  image?: string;
+  earnedDate?: string;
 }
 
 export interface CaseStudy {
@@ -192,11 +200,13 @@ export interface CaseStudy {
   year: number;
 }
 
-// Add this to fix StudyNoteInput error
 export interface StudyNoteInput {
   title: string;
   content: string;
   userId: string;
   courseId?: string;
   lessonId?: string;
+  type?: string; // Added to fix type errors
+  moduleId?: string; // Added to fix type errors
+  moduleName?: string; // Added to fix type errors
 }
