@@ -239,5 +239,4 @@
   animation: lightbox-close 0.3s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards;
 }
 
-/* Fix for types in database functions */
-// This doesn't actually add CSS, but it's a reminder to fix the types in the database files
+/* Fix for types in database functions - This is a reminder to fix the types in the database files */
