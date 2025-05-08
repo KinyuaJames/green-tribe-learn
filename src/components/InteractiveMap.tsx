@@ -152,14 +152,14 @@ const InteractiveMap: React.FC = () => {
   };
 
   // Center position for the map
-  const center: [number, number] = [4.0, 19.0]; // Center on Africa
+  const position: [number, number] = [4.0, 19.0]; // Center on Africa
   
   return (
     <div className="relative w-full min-h-[70vh] bg-muted/20">
       {/* Map Container */}
       <div className="w-full h-[70vh] rounded-lg shadow-lg overflow-hidden">
         <MapContainer 
-          center={center} 
+          defaultCenter={position} 
           zoom={2.5} 
           style={{ height: '100%', width: '100%' }}
           className="z-10"
