@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -13,23 +14,26 @@ import { getCaseStudyById } from '@/utils/database';
 import ImageWithFallback from '@/components/ImageWithFallback';
 import MasonryGallery from '@/components/MasonryGallery';
 
+// Updated fallback images from Unsplash with reliable URLs
+const fallbackImages = [
+  'https://images.unsplash.com/photo-1497604401993-f2e922e5cb0a',
+  'https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07',
+  'https://images.unsplash.com/photo-1483058712412-4245e9b90334',
+  'https://images.unsplash.com/photo-1465056836041-7f43ac27dcb5',
+  'https://images.unsplash.com/photo-1490730141103-6cac27aaab94',
+  'https://images.unsplash.com/photo-1501854140801-50d01698950b',
+  'https://images.unsplash.com/photo-1518005020951-eccb494ad742',
+  'https://images.unsplash.com/photo-1433086966358-54859d0ed716',
+  'https://images.unsplash.com/photo-1497604401993-f2e922e5cb0a'
+];
+
 // Generate appropriate number of images with good fallbacks
 const generateGalleryImages = (baseImages: string[] = [], minCount: number = 9) => {
-  // Use our local fallback as default
-  const fallbackImage = '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png';
-  
-  // Add common high-quality fallbacks that will likely load
-  const fallbacks = [
-    'https://images.unsplash.com/photo-1531371484131-426e9f5e2b9b', // architectural
-    'https://images.unsplash.com/photo-1518780664697-55e3ad937233', // green spaces
-    'https://images.unsplash.com/photo-1459716354056-0a13dfe5a756', // plant structure
-    'https://images.unsplash.com/photo-1619336107270-f64b713b805b', // natural space
-    'https://images.unsplash.com/photo-1515524014198-60918752006c', // biophilic
-    fallbackImage
-  ];
+  // Ensure we have a local fallback
+  const localFallback = '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png';
   
   if (!baseImages || baseImages.length === 0) {
-    return fallbacks.concat(Array(Math.max(0, minCount - fallbacks.length)).fill(fallbackImage));
+    return fallbackImages.concat(Array(Math.max(0, minCount - fallbackImages.length)).fill(localFallback));
   }
   
   if (baseImages.length >= minCount) {
@@ -40,14 +44,14 @@ const generateGalleryImages = (baseImages: string[] = [], minCount: number = 9) 
   const result = [...baseImages];
   
   // Add fallbacks first
-  for (let i = 0; i < fallbacks.length && result.length < minCount; i++) {
-    result.push(fallbacks[i]);
+  for (let i = 0; i < fallbackImages.length && result.length < minCount; i++) {
+    result.push(fallbackImages[i]);
   }
   
   // If we still need more, repeat the original images
   let index = 0;
   while (result.length < minCount) {
-    result.push(baseImages[index % baseImages.length] || fallbackImage);
+    result.push(baseImages[index % baseImages.length] || localFallback);
     index++;
   }
   
@@ -106,8 +110,8 @@ const CaseStudyDetail = () => {
               
               <div className="aspect-video mb-8 rounded-lg overflow-hidden">
                 <ImageWithFallback 
-                  src={caseStudy.images[0]} 
-                  fallbackSrc1={caseStudy.images[1] || ''} 
+                  src={galleryImages[0]} 
+                  fallbackSrc1={galleryImages[1] || fallbackImages[0]} 
                   defaultFallback="/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png"
                   alt={caseStudy.title}
                   className="w-full h-full object-cover"
@@ -121,7 +125,7 @@ const CaseStudyDetail = () => {
                   <TabsTrigger value="insights">Insights</TabsTrigger>
                 </TabsList>
                 
-                <TabsContent value="overview" className="mt-6">
+                <TabsContent value="overview" className="mt-6 animate-fade-in">
                   <Card>
                     <CardContent className="pt-6">
                       <p className="text-foreground/80 whitespace-pre-line">
@@ -131,11 +135,11 @@ const CaseStudyDetail = () => {
                   </Card>
                 </TabsContent>
                 
-                <TabsContent value="gallery" className="mt-6">
+                <TabsContent value="gallery" className="mt-6 animate-fade-in">
                   <MasonryGallery images={galleryImages} columnCount={3} />
                 </TabsContent>
                 
-                <TabsContent value="insights" className="mt-6">
+                <TabsContent value="insights" className="mt-6 animate-fade-in">
                   <Card>
                     <CardContent className="pt-6">
                       <h3 className="text-lg font-medium mb-4">Biophilic Design Principles</h3>
@@ -163,6 +167,7 @@ const CaseStudyDetail = () => {
                         <p className="text-sm text-muted-foreground">Submitted by</p>
                         <div className="flex items-center mt-1">
                           <Avatar className="h-6 w-6 mr-2">
+                            <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${caseStudy.author}`} />
                             <AvatarFallback>{caseStudy.author[0]}</AvatarFallback>
                           </Avatar>
                           <span>{caseStudy.author}</span>

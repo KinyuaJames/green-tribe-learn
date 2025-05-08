@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Menu, X, ChevronDown, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -20,7 +20,7 @@ import { toast } from 'sonner';
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   const { currentUser, login, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);

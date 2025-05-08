@@ -4,11 +4,25 @@ import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import ImageWithFallback from './ImageWithFallback';
+import '../styles/animations.css';
 
 interface MasonryGalleryProps {
   images: string[];
   columnCount?: number;
 }
+
+// Array of reliable fallback images from Unsplash
+const fallbackImages = [
+  'https://images.unsplash.com/photo-1497106636505-4f8520681cb5',
+  'https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07',
+  'https://images.unsplash.com/photo-1483058712412-4245e9b90334',
+  'https://images.unsplash.com/photo-1465056836041-7f43ac27dcb5',
+  'https://images.unsplash.com/photo-1490730141103-6cac27aaab94',
+  'https://images.unsplash.com/photo-1501854140801-50d01698950b',
+  'https://images.unsplash.com/photo-1518005020951-eccb494ad742',
+  'https://images.unsplash.com/photo-1433086966358-54859d0ed716',
+  'https://images.unsplash.com/photo-1497604401993-f2e922e5cb0a'
+];
 
 const MasonryGallery: React.FC<MasonryGalleryProps> = ({ 
   images = [], 
@@ -18,20 +32,27 @@ const MasonryGallery: React.FC<MasonryGalleryProps> = ({
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [prevImageIndex, setPrevImageIndex] = useState(-1);
   const [direction, setDirection] = useState<'next' | 'prev' | null>(null);
+  const [animatingClosure, setAnimatingClosure] = useState(false);
   
   // Ensure we have at least 9 images for the gallery
   const displayImages = images.length < 9 ? 
-    [...images, ...Array(9 - images.length).fill('/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png')] : 
+    [...images, ...fallbackImages.slice(0, Math.max(9 - images.length, 0))] : 
     images;
   
   const openLightbox = (index: number) => {
     setActiveImageIndex(index);
     setPrevImageIndex(-1);
     setLightboxOpen(true);
+    document.body.style.overflow = 'hidden'; // Prevent scrolling when lightbox is open
   };
   
   const closeLightbox = () => {
-    setLightboxOpen(false);
+    setAnimatingClosure(true);
+    setTimeout(() => {
+      setLightboxOpen(false);
+      setAnimatingClosure(false);
+      document.body.style.overflow = ''; // Re-enable scrolling
+    }, 300); // Match this with the animation duration
   };
   
   const nextImage = (e: React.MouseEvent) => {
@@ -106,6 +127,7 @@ const MasonryGallery: React.FC<MasonryGalleryProps> = ({
             >
               <ImageWithFallback
                 src={image}
+                fallbackSrc1={fallbackImages[index % fallbackImages.length]}
                 defaultFallback="/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png"
                 alt={`Gallery image ${index + 1}`}
                 className="w-full h-auto object-cover transition-transform hover:scale-105"
@@ -125,26 +147,26 @@ const MasonryGallery: React.FC<MasonryGalleryProps> = ({
         ))}
       </div>
       
-      {/* Enhanced Lightbox with blurred background of next image */}
+      {/* Enhanced Lightbox with fullscreen blurred background of next image */}
       {lightboxOpen && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center"
+          className={`fixed inset-0 z-50 flex items-center justify-center ${animatingClosure ? 'animate-fade-out' : 'animate-scale-up'}`}
           onClick={closeLightbox}
-          style={{
-            backdropFilter: 'blur(10px)',
-            WebkitBackdropFilter: 'blur(10px)',
-          }}
         >
           {/* Background image (blurred next image) */}
           <div 
             className="absolute inset-0 opacity-30 transition-opacity duration-500 ease-in-out" 
             style={{
-              backgroundImage: `url(${displayImages[getNextImageIndex()]})`,
+              backgroundImage: `url(${displayImages[getNextImageIndex()] || fallbackImages[0]})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               filter: 'blur(20px)',
+              transform: 'scale(1.1)', // Slightly larger to avoid seeing edges during blur
             }}
           />
+          
+          {/* Overlay for better contrast */}
+          <div className="absolute inset-0 bg-black/50"></div>
           
           {/* Main content */}
           <div 
@@ -161,6 +183,7 @@ const MasonryGallery: React.FC<MasonryGalleryProps> = ({
                 >
                   <ImageWithFallback
                     src={displayImages[prevImageIndex]}
+                    fallbackSrc1={fallbackImages[prevImageIndex % fallbackImages.length]}
                     defaultFallback="/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png" 
                     alt={`Gallery image ${prevImageIndex + 1}`}
                     className="max-w-full max-h-[80vh] object-contain mx-auto"
@@ -168,14 +191,15 @@ const MasonryGallery: React.FC<MasonryGalleryProps> = ({
                 </div>
               )}
               
-              {/* Current image */}
+              {/* Current image with animation */}
               <div className={`transition-all duration-300 ${
                 prevImageIndex >= 0 ? (
                   direction === 'next' ? 'animate-slide-in-right' : 'animate-slide-in-left'
-                ) : ''
+                ) : 'animate-scale-up'
               }`}>
                 <ImageWithFallback
                   src={displayImages[activeImageIndex]}
+                  fallbackSrc1={fallbackImages[activeImageIndex % fallbackImages.length]}
                   defaultFallback="/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png"
                   alt={`Gallery image ${activeImageIndex + 1}`}
                   className="max-w-full max-h-[80vh] object-contain mx-auto rounded-lg shadow-xl"
