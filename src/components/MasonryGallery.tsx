@@ -162,16 +162,16 @@ const MasonryGallery: React.FC<MasonryGalleryProps> = ({
               backgroundPosition: 'center',
               filter: 'blur(20px)',
               transform: 'scale(1.1)', // Slightly larger to avoid seeing edges during blur
-              opacity: 0.8,
+              opacity: 0.9,
             }}
           />
           
           {/* Additional dark overlay for better visibility */}
-          <div className="absolute inset-0 bg-black/60"></div>
+          <div className="absolute inset-0 bg-black/50"></div>
           
           {/* Main content */}
           <div 
-            className="relative max-w-screen-lg max-h-[90vh] p-4" 
+            className="relative max-w-screen-lg max-h-[90vh] p-4 z-10" 
             onClick={e => e.stopPropagation()}
           >
             <div className="relative">
