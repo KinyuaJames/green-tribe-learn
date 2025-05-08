@@ -52,6 +52,8 @@ const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
 
   const handleError = () => {
     console.log(`Image failed to load: ${imgSrc}`);
+    
+    // Try the next fallback
     if (fallbackIndex === 0 && fallbackSrc1) {
       setImgSrc(fallbackSrc1);
       setFallbackIndex(1);
@@ -59,9 +61,11 @@ const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
       setImgSrc(fallbackSrc2);
       setFallbackIndex(2);
     } else {
+      // If all fallbacks fail or none are provided, use default fallback
       console.log(`Using default fallback: ${defaultFallback}`);
       setImgSrc(defaultFallback);
       setHasError(true);
+      setIsLoaded(true);
     }
   };
 

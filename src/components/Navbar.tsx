@@ -1,7 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, ChevronDown, User } from 'lucide-react';
+import { Menu, X, ChevronDown, User, Home, BookOpen, Map, Users, Info, LogIn } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
@@ -27,6 +27,16 @@ const Navbar = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,12 +58,12 @@ const Navbar = () => {
   };
 
   const navItems = [
-    { path: '/', label: 'Home' },
-    { path: '/courses', label: 'Courses' },
-    { path: '/case-studies', label: 'Case Studies' },
-    { path: '/indigenous-map', label: 'Indigenous Map' },
-    { path: '/tribe', label: 'Biophilic Tribe' },
-    { path: '/about', label: 'About' },
+    { path: '/', label: 'Home', icon: <Home className="w-4 h-4 mr-2" /> },
+    { path: '/courses', label: 'Courses', icon: <BookOpen className="w-4 h-4 mr-2" /> },
+    { path: '/case-studies', label: 'Case Studies', icon: <BookOpen className="w-4 h-4 mr-2" /> },
+    { path: '/indigenous-map', label: 'Indigenous Map', icon: <Map className="w-4 h-4 mr-2" /> },
+    { path: '/tribe', label: 'Biophilic Tribe', icon: <Users className="w-4 h-4 mr-2" /> },
+    { path: '/about', label: 'About', icon: <Info className="w-4 h-4 mr-2" /> },
   ];
 
   const isActive = (path: string) => {
@@ -61,12 +71,18 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-background/95 backdrop-blur-md sticky top-0 z-40 border-b border-border/40">
+    <nav 
+      className={`fixed w-full top-0 z-40 transition-all duration-300 ${
+        isScrolled 
+          ? 'bg-background/95 backdrop-blur-md shadow-sm' 
+          : 'bg-background/80 backdrop-blur-sm'
+      }`}
+    >
       <div className="container mx-auto px-4 py-3">
         <div className="flex justify-between items-center">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="flex items-center justify-center bg-biophilic-earth text-white w-10 h-10 rounded-full font-bold text-lg">
+          <Link to="/" className="flex items-center space-x-2 group">
+            <div className="flex items-center justify-center bg-gradient-to-tr from-biophilic-earth to-biophilic-clay text-white w-10 h-10 rounded-full font-bold text-lg transition-transform group-hover:scale-105">
               GB
             </div>
             <div className="hidden sm:block text-xl font-medium">
@@ -80,13 +96,14 @@ const Navbar = () => {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`px-3 py-2 rounded-md transition-colors ${
+                className={`px-4 py-2 rounded-full flex items-center transition-all ${
                   isActive(item.path)
-                    ? 'bg-biophilic-sand/10 text-biophilic-earth'
+                    ? 'bg-biophilic-sand/20 text-biophilic-earth font-medium shadow-sm'
                     : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
                 }`}
               >
-                {item.label}
+                {!isScrolled && item.icon}
+                <span>{item.label}</span>
               </Link>
             ))}
           </div>
@@ -96,25 +113,30 @@ const Navbar = () => {
             {currentUser ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="flex items-center space-x-1">
+                  <Button variant="outline" size="sm" className="flex items-center space-x-1 rounded-full border-biophilic-earth/20 hover:border-biophilic-earth/50">
                     <User className="w-4 h-4 mr-1" />
                     <span>{currentUser.name || currentUser.email}</span>
                     <ChevronDown className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem onClick={() => navigate('/dashboard')}>Dashboard</DropdownMenuItem>
+                <DropdownMenuContent align="end" className="w-56 rounded-xl border-biophilic-sand/30">
+                  <DropdownMenuItem onClick={() => navigate('/dashboard')} className="rounded-lg cursor-pointer">Dashboard</DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => logout()}>Logout</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => logout()} className="rounded-lg cursor-pointer text-red-500 hover:text-red-600">Logout</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
               <>
-                <Button variant="ghost" size="sm" onClick={() => setLoginDialogOpen(true)}>
-                  Log In
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setLoginDialogOpen(true)}
+                  className="rounded-full hover:bg-biophilic-sand/10"
+                >
+                  <LogIn className="w-4 h-4 mr-1" /> Log In
                 </Button>
                 <Button
-                  className="bg-biophilic-earth hover:bg-biophilic-earth/90"
+                  className="bg-gradient-to-r from-biophilic-earth to-biophilic-clay hover:opacity-90 rounded-full"
                   size="sm"
                   onClick={() => navigate('/signup')}
                 >
@@ -130,14 +152,14 @@ const Navbar = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="mr-2"
+                className="mr-2 rounded-full"
                 onClick={() => navigate('/dashboard')}
               >
                 <User className="w-5 h-5" />
               </Button>
             )}
             <button
-              className="text-foreground p-2 focus:outline-none"
+              className="text-foreground p-2 focus:outline-none rounded-full hover:bg-muted/50 transition-colors"
               onClick={toggleMobileMenu}
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -147,54 +169,55 @@ const Navbar = () => {
 
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <div className="lg:hidden mt-3 border-t border-border/40 pt-3 pb-2">
+          <div className="lg:hidden mt-3 border-t border-border/20 pt-3 pb-2 animate-fade-in">
             <div className="flex flex-col space-y-1">
               {navItems.map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`px-3 py-3 rounded-md transition-colors ${
+                  className={`px-4 py-3 rounded-lg transition-colors flex items-center ${
                     isActive(item.path)
                       ? 'bg-biophilic-sand/10 text-biophilic-earth'
-                      : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
+                      : 'text-foreground/70 hover:text-foreground hover:bg-muted/30'
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  {item.label}
+                  {item.icon}
+                  <span>{item.label}</span>
                 </Link>
               ))}
 
               {!currentUser && (
                 <>
-                  <hr className="border-border/40 my-2" />
+                  <hr className="border-border/20 my-2" />
                   <Button
                     variant="ghost"
-                    className="justify-start px-3"
+                    className="justify-start px-4 rounded-lg flex items-center"
                     onClick={() => {
                       setLoginDialogOpen(true);
                       setMobileMenuOpen(false);
                     }}
                   >
-                    Log In
+                    <LogIn className="w-4 h-4 mr-2" /> Log In
                   </Button>
                   <Button
-                    className="bg-biophilic-earth hover:bg-biophilic-earth/90 justify-start"
+                    className="bg-gradient-to-r from-biophilic-earth to-biophilic-clay hover:opacity-90 justify-start rounded-lg"
                     onClick={() => {
                       navigate('/signup');
                       setMobileMenuOpen(false);
                     }}
                   >
-                    Sign Up
+                    <span className="ml-2">Sign Up</span>
                   </Button>
                 </>
               )}
               
               {currentUser && (
                 <>
-                  <hr className="border-border/40 my-2" />
+                  <hr className="border-border/20 my-2" />
                   <Button
                     variant="ghost"
-                    className="justify-start px-3 text-red-500"
+                    className="justify-start px-4 text-red-500 hover:text-red-600 hover:bg-red-50/30 rounded-lg"
                     onClick={() => {
                       logout();
                       setMobileMenuOpen(false);
@@ -211,10 +234,10 @@ const Navbar = () => {
       
       {/* Login Dialog */}
       <Dialog open={loginDialogOpen} onOpenChange={setLoginDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md rounded-xl">
           <DialogHeader>
-            <DialogTitle>Login to your account</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-center text-xl">Login to your account</DialogTitle>
+            <DialogDescription className="text-center">
               Enter your email and password to access all features.
             </DialogDescription>
           </DialogHeader>
@@ -228,6 +251,7 @@ const Navbar = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your@email.com"
+                className="rounded-lg"
                 required
               />
             </div>
@@ -251,6 +275,7 @@ const Navbar = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
+                className="rounded-lg"
                 required
               />
             </div>
@@ -268,7 +293,7 @@ const Navbar = () => {
               </button>
               <Button 
                 type="submit" 
-                className="bg-biophilic-earth hover:bg-biophilic-earth/90"
+                className="bg-gradient-to-r from-biophilic-earth to-biophilic-clay hover:opacity-90 rounded-lg"
                 disabled={isLoggingIn}
               >
                 {isLoggingIn ? 'Logging in...' : 'Log in'}

@@ -150,25 +150,24 @@ const MasonryGallery: React.FC<MasonryGalleryProps> = ({
       {/* Enhanced Lightbox with fullscreen blurred background of next image */}
       {lightboxOpen && (
         <div 
-          className={`fixed inset-0 z-50 flex items-center justify-center ${animatingClosure ? 'animate-fade-out' : 'animate-zoom-in'}`}
+          className={`fixed inset-0 z-50 flex items-center justify-center ${animatingClosure ? 'animate-fade-out' : 'animate-lightbox-open'}`}
           onClick={closeLightbox}
         >
           {/* Background image (blurred next image) */}
           <div 
-            className="absolute inset-0 opacity-80" 
+            className="absolute inset-0" 
             style={{
               backgroundImage: `url(${displayImages[getNextImageIndex()] || fallbackImages[0]})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               filter: 'blur(20px)',
               transform: 'scale(1.1)', // Slightly larger to avoid seeing edges during blur
-              backgroundColor: 'rgba(0, 0, 0, 0.8)', // Dark overlay
-              backgroundBlendMode: 'overlay',
+              opacity: 0.8,
             }}
           />
           
           {/* Additional dark overlay for better visibility */}
-          <div className="absolute inset-0 bg-black/80"></div>
+          <div className="absolute inset-0 bg-black/60"></div>
           
           {/* Main content */}
           <div 
@@ -197,7 +196,7 @@ const MasonryGallery: React.FC<MasonryGalleryProps> = ({
               <div className={`transition-all duration-300 ${
                 prevImageIndex >= 0 ? (
                   direction === 'next' ? 'animate-slide-in-right' : 'animate-slide-in-left'
-                ) : 'animate-scale-up'
+                ) : 'animate-zoom-in'
               }`}>
                 <ImageWithFallback
                   src={displayImages[activeImageIndex]}
@@ -210,10 +209,10 @@ const MasonryGallery: React.FC<MasonryGalleryProps> = ({
             </div>
           </div>
           
-          {/* Fixed position navigation buttons */}
+          {/* Fixed position navigation buttons (outside the image container) */}
           <button 
             onClick={prevImage}
-            className="fixed left-8 top-1/2 -translate-y-1/2 bg-white/30 hover:bg-white/60 rounded-full p-4 transition-all transform hover:scale-110 backdrop-blur-sm z-60"
+            className="fixed left-8 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 rounded-full p-4 transition-all transform hover:scale-110 backdrop-blur-sm z-60 animate-fade-in"
             aria-label="Previous image"
           >
             <svg className="w-6 h-6" fill="none" stroke="white" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -223,7 +222,7 @@ const MasonryGallery: React.FC<MasonryGalleryProps> = ({
           
           <button 
             onClick={nextImage}
-            className="fixed right-8 top-1/2 -translate-y-1/2 bg-white/30 hover:bg-white/60 rounded-full p-4 transition-all transform hover:scale-110 backdrop-blur-sm z-60"
+            className="fixed right-8 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 rounded-full p-4 transition-all transform hover:scale-110 backdrop-blur-sm z-60 animate-fade-in"
             aria-label="Next image"
           >
             <svg className="w-6 h-6" fill="none" stroke="white" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -234,7 +233,7 @@ const MasonryGallery: React.FC<MasonryGalleryProps> = ({
           {/* Fixed close button */}
           <button 
             onClick={closeLightbox}
-            className="fixed top-8 right-8 bg-white/30 hover:bg-white/60 rounded-full p-3 transition-all transform hover:scale-110 backdrop-blur-sm z-60"
+            className="fixed top-8 right-8 bg-white/20 hover:bg-white/40 rounded-full p-3 transition-all transform hover:scale-110 backdrop-blur-sm z-60 animate-fade-in"
             aria-label="Close lightbox"
           >
             <svg className="w-6 h-6" fill="none" stroke="white" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -245,19 +244,19 @@ const MasonryGallery: React.FC<MasonryGalleryProps> = ({
           {/* Fixed download button */}
           <button 
             onClick={(e) => handleDownload(e, displayImages[activeImageIndex])}
-            className="fixed bottom-8 right-8 bg-white/30 hover:bg-white/60 rounded-full p-3 transition-all transform hover:scale-110 backdrop-blur-sm z-60 flex items-center justify-center"
+            className="fixed bottom-8 right-8 bg-white/20 hover:bg-white/40 rounded-full p-3 transition-all transform hover:scale-110 backdrop-blur-sm z-60 flex items-center justify-center animate-fade-in"
             aria-label="Download image"
           >
             <Download className="h-6 w-6 text-white" />
           </button>
           
           {/* Fixed image counter and badge */}
-          <div className="fixed bottom-8 left-8 flex items-center space-x-2 z-60">
-            <Badge className="bg-white/30 text-white backdrop-blur-sm px-4 py-1.5 hover:bg-white/40 transition-colors text-lg">
+          <div className="fixed bottom-8 left-8 flex items-center space-x-2 z-60 animate-fade-in">
+            <Badge className="bg-white/20 text-white backdrop-blur-sm px-4 py-1.5 hover:bg-white/40 transition-colors text-lg">
               {activeImageIndex + 1} / {displayImages.length}
             </Badge>
             
-            <Badge variant="outline" className="bg-black/40 text-white backdrop-blur-sm border-white/30 px-3 py-1.5">
+            <Badge variant="outline" className="bg-black/20 text-white backdrop-blur-sm border-white/30 px-3 py-1.5">
               Gallery
             </Badge>
           </div>

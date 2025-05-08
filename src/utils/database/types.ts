@@ -53,7 +53,9 @@ export interface StudyItem {
   type: string;
   content: string;
   moduleId?: string; 
-  moduleName?: string; // Adding this to fix type errors
+  moduleName?: string;
+  courseId?: string; // Added to fix type errors
+  lessonId?: string; // Added to fix type errors
 }
 
 export interface Resource {
@@ -82,7 +84,7 @@ export interface User {
   certificates?: Certificate[];
   completedQuizzes?: string[];
   avatar?: string;
-  createdAt?: string; // Added to fix type errors
+  createdAt?: string;
 }
 
 export interface DiscussionMessage {
@@ -141,10 +143,9 @@ export interface QuizQuestion {
   correctAnswerIndex: number;
   explanation?: string;
   correctOptionId?: string;
-  text?: string;
+  text?: string; // For compatibility with existing code
 }
 
-// Added to fix type errors
 export interface QuizOption {
   id: string;
   text: string;
@@ -160,7 +161,8 @@ export interface QuizAttempt {
   startedAt: string;
   completedAt?: string;
   totalQuestions?: number;
-  passed?: boolean; // Added to fix type errors
+  passed?: boolean;
+  date?: string; // Added for compatibility with existing code
 }
 
 export interface Certificate {
@@ -181,8 +183,8 @@ export interface Badge {
   imageUrl: string;
   criteria: string;
   dateEarned: string;
-  image?: string;
-  earnedDate?: string;
+  image?: string; // Added for compatibility
+  earnedDate?: string; // Added for compatibility
 }
 
 export interface CaseStudy {
@@ -206,7 +208,7 @@ export interface StudyNoteInput {
   userId: string;
   courseId?: string;
   lessonId?: string;
-  type?: string; // Added to fix type errors
-  moduleId?: string; // Added to fix type errors
-  moduleName?: string; // Added to fix type errors
+  type?: string;
+  moduleId?: string;
+  moduleName?: string;
 }

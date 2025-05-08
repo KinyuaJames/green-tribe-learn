@@ -1,22 +1,33 @@
 
-import React, { useEffect, useRef, useState } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import React, { useState } from 'react';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import { Dialog } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import ImageWithFallback from './ImageWithFallback';
+import L from 'leaflet';
 
-// Hardcoded Mapbox token - in production, this should be in an environment variable
-const MAPBOX_TOKEN = 'pk.eyJ1Ijoiamlta20iLCJhIjoiY21hZTloMDE3MDR5ZTJxczU5b2Y2Z2QwNSJ9.e_f21CLkuIeY6fLQ4fuSkA';
+// Fix default marker icon issue in React Leaflet
+// This is needed because the default icons from leaflet can't be loaded in many build setups
+import icon from 'leaflet/dist/images/marker-icon.png';
+import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+
+let DefaultIcon = L.icon({
+  iconUrl: icon,
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+});
+
+L.Marker.prototype.options.icon = DefaultIcon;
 
 // Tribal design data with updated image URLs
 const tribalDesigns = [
   {
     id: 'dogon',
     name: 'Dogon',
-    location: [3.5, 13.9] as [number, number], // Type assertion as [number, number]
+    location: [13.9, 3.5] as [number, number], // Note: Leaflet uses [lat, lng] format, opposite of Mapbox
     country: 'Mali',
     description: 'The Dogon people are known for their stone and mud architecture, including cliff dwellings, granaries with thatched roofs, and meetinghouses with intricately carved wooden doors and posts.',
     materials: ['Clay', 'Stone', 'Thatch'],
@@ -30,7 +41,7 @@ const tribalDesigns = [
   {
     id: 'ndebele',
     name: 'Ndebele',
-    location: [29.4, -25.8] as [number, number],
+    location: [-25.8, 29.4] as [number, number],
     country: 'South Africa',
     description: 'The Ndebele people create vivid geometric patterns on their homes, using bright colors derived from natural pigments. These designs are not only decorative but also communicate cultural identity and social status.',
     materials: ['Natural pigments', 'Clay', 'Adobe'],
@@ -44,7 +55,7 @@ const tribalDesigns = [
   {
     id: 'zulu',
     name: 'Zulu',
-    location: [31.5, -28.5] as [number, number],
+    location: [-28.5, 31.5] as [number, number],
     country: 'South Africa',
     description: 'The Zulu people build domed structures (indlu) made from a framework of poles covered with thatch or grass mats. Their settlements (umuzi) are typically circular in layout with a central cattle kraal.',
     materials: ['Grass', 'Reeds', 'Wood'],
@@ -58,7 +69,7 @@ const tribalDesigns = [
   {
     id: 'maasai',
     name: 'Maasai',
-    location: [36.8, -1.3] as [number, number],
+    location: [-1.3, 36.8] as [number, number],
     country: 'Kenya & Tanzania',
     description: 'The Maasai build homes (inkajijik) using a frame of timber poles interwoven with a lattice of smaller branches, which is then plastered with a mix of mud, grass, cow dung, and ash.',
     materials: ['Wood frame', 'Cow dung', 'Clay', 'Ash'],
@@ -72,7 +83,7 @@ const tribalDesigns = [
   {
     id: 'ashanti',
     name: 'Ashanti',
-    location: [-1.6, 6.7] as [number, number],
+    location: [6.7, -1.6] as [number, number],
     country: 'Ghana',
     description: 'The Ashanti people are known for their rectangular structures with steep thatched roofs. Traditional buildings feature intricate geometric designs and are built using a timber frame with mud filling.',
     materials: ['Timber frame', 'Clay', 'Thatch'],
@@ -86,7 +97,7 @@ const tribalDesigns = [
   {
     id: 'somali',
     name: 'Somali',
-    location: [45.3, 2.0] as [number, number],
+    location: [2.0, 45.3] as [number, number],
     country: 'Somalia',
     description: 'The Somali nomadic hut (aqal) is a portable dome-shaped structure made with bent saplings covered with woven mats, grass, or hides. These structures can be dismantled and reassembled quickly as needed.',
     materials: ['Bent saplings', 'Woven mats', 'Animal hides', 'Grass'],
@@ -100,7 +111,7 @@ const tribalDesigns = [
   {
     id: 'nubian',
     name: 'Nubian',
-    location: [32.9, 22.0] as [number, number],
+    location: [22.0, 32.9] as [number, number],
     country: 'Egypt & Sudan',
     description: 'Nubian architecture is characterized by colorful geometric patterns on house facades and distinctive vault designs. Traditionally built using mud brick, these structures remain cool in hot climates.',
     materials: ['Mud brick', 'Natural pigments', 'Palm wood'],
@@ -114,7 +125,7 @@ const tribalDesigns = [
   {
     id: 'berber',
     name: 'Berber',
-    location: [-5.8, 31.8] as [number, number],
+    location: [31.8, -5.8] as [number, number],
     country: 'Morocco & Algeria',
     description: 'The Berber people build earthen structures that blend into the landscape. Their homes often include flat roofs for sleeping in hot summer months and small windows for climate control.',
     materials: ['Rammed earth', 'Stone', 'Clay'],
@@ -128,115 +139,46 @@ const tribalDesigns = [
 ];
 
 const InteractiveMap: React.FC = () => {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
   const [selectedTribe, setSelectedTribe] = useState<typeof tribalDesigns[0] | null>(null);
-  const [mapReady, setMapReady] = useState<boolean>(false);
   const [mapError, setMapError] = useState<string | null>(null);
   
-  // Initialize map when container is available
-  useEffect(() => {
-    if (mapContainer.current && !map.current) {
-      try {
-        console.log("Initializing Mapbox map with token...");
-        
-        // Set the access token
-        mapboxgl.accessToken = MAPBOX_TOKEN;
-        
-        // Debug check for token
-        console.log("Mapbox token set:", mapboxgl.accessToken);
-        
-        // Create new map instance with a more compatible style
-        map.current = new mapboxgl.Map({
-          container: mapContainer.current,
-          style: 'mapbox://styles/mapbox/outdoors-v12', // Changed to a more reliable style
-          center: [19.0, 4.0], // Center on Africa
-          zoom: 2.5,
-          projection: 'mercator' // Use mercator for better compatibility
-        });
+  const handleMarkerClick = (tribe: typeof tribalDesigns[0]) => {
+    setSelectedTribe(tribe);
+  };
 
-        console.log("Map instance created");
-
-        // Add navigation controls
-        map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-        
-        // Add markers when map loads
-        map.current.on('load', () => {
-          console.log("Map loaded successfully");
-          setMapReady(true);
-          
-          // Force a resize to ensure the map renders correctly
-          if (map.current) {
-            map.current.resize();
-            
-            // Add markers for each tribal design
-            tribalDesigns.forEach(tribe => {
-              try {
-                // Create marker element
-                const marker = document.createElement('div');
-                marker.className = 'cursor-pointer w-6 h-6 rounded-full bg-biophilic-earth border-2 border-white flex items-center justify-center text-white hover:bg-biophilic-clay transition-colors';
-                
-                console.log(`Creating marker for ${tribe.name} at location:`, tribe.location);
-                
-                // Create a new marker
-                new mapboxgl.Marker(marker)
-                  .setLngLat(tribe.location)
-                  .setPopup(
-                    new mapboxgl.Popup({ offset: 25 })
-                      .setHTML(`<strong>${tribe.name}</strong><br>${tribe.country}`)
-                  )
-                  .addTo(map.current!);
-                  
-                // Add click listener to the marker
-                marker.addEventListener('click', () => {
-                  setSelectedTribe(tribe);
-                });
-              } catch (err) {
-                console.error(`Error creating marker for ${tribe.name}:`, err);
-              }
-            });
-          }
-        });
-
-        // Handle map errors
-        map.current.on('error', (e) => {
-          console.error("Map error:", e);
-          setMapError("Failed to initialize map. Please check your connection and try again.");
-        });
-        
-      } catch (error) {
-        console.error("Error initializing map:", error);
-        setMapError("Failed to initialize map. Please check your connection and try again.");
-      }
-    }
-    
-    // Clean up on unmount
-    return () => {
-      if (map.current) {
-        map.current.remove();
-        map.current = null;
-      }
-    };
-  }, []);
+  const center: [number, number] = [4.0, 19.0]; // Center on Africa
   
   return (
     <div className="relative w-full min-h-[70vh] bg-muted/20">
       {/* Map Container */}
-      <div 
-        ref={mapContainer} 
-        className="w-full h-[70vh] rounded-lg shadow-lg"
-        style={{ opacity: mapReady ? 1 : 0.7 }} // Visual indication that map is loading
-      />
-      
-      {/* Loading indicator */}
-      {!mapReady && !mapError && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin h-8 w-8 border-4 border-biophilic-earth border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p>Loading map...</p>
-          </div>
-        </div>
-      )}
+      <div className="w-full h-[70vh] rounded-lg shadow-lg overflow-hidden">
+        <MapContainer 
+          center={center} 
+          zoom={2.5} 
+          style={{ height: '100%', width: '100%' }}
+          className="z-10"
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          
+          {/* Markers for each tribal location */}
+          {tribalDesigns.map((tribe) => (
+            <Marker 
+              key={tribe.id} 
+              position={tribe.location}
+              eventHandlers={{
+                click: () => handleMarkerClick(tribe),
+              }}
+            >
+              <Popup>
+                <strong>{tribe.name}</strong><br/>{tribe.country}
+              </Popup>
+            </Marker>
+          ))}
+        </MapContainer>
+      </div>
       
       {/* Error message */}
       {mapError && (
@@ -330,6 +272,63 @@ const InteractiveMap: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Comment out the original Mapbox code for reference */}
+      {/* 
+      // Original Mapbox implementation
+      useEffect(() => {
+        if (mapContainer.current && !map.current) {
+          try {
+            console.log("Initializing Mapbox map with token...");
+            mapboxgl.accessToken = MAPBOX_TOKEN;
+            console.log("Mapbox token set:", mapboxgl.accessToken);
+            map.current = new mapboxgl.Map({
+              container: mapContainer.current,
+              style: 'mapbox://styles/mapbox/outdoors-v12',
+              center: [19.0, 4.0],
+              zoom: 2.5,
+              projection: 'mercator'
+            });
+
+            map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+            map.current.on('load', () => {
+              setMapReady(true);
+              if (map.current) {
+                map.current.resize();
+                tribalDesigns.forEach(tribe => {
+                  try {
+                    const marker = document.createElement('div');
+                    marker.className = 'cursor-pointer w-6 h-6 rounded-full bg-biophilic-earth border-2 border-white flex items-center justify-center text-white hover:bg-biophilic-clay transition-colors';
+                    new mapboxgl.Marker(marker)
+                      .setLngLat(tribe.location)
+                      .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(`<strong>${tribe.name}</strong><br>${tribe.country}`))
+                      .addTo(map.current!);
+                    marker.addEventListener('click', () => {
+                      setSelectedTribe(tribe);
+                    });
+                  } catch (err) {
+                    console.error(`Error creating marker for ${tribe.name}:`, err);
+                  }
+                });
+              }
+            });
+            map.current.on('error', (e) => {
+              console.error("Map error:", e);
+              setMapError("Failed to initialize map. Please check your connection and try again.");
+            });
+          } catch (error) {
+            console.error("Error initializing map:", error);
+            setMapError("Failed to initialize map. Please check your connection and try again.");
+          }
+        }
+        return () => {
+          if (map.current) {
+            map.current.remove();
+            map.current = null;
+          }
+        };
+      }, []);
+      */}
     </div>
   );
 };
