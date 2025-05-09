@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -28,8 +27,9 @@ const CourseDetail = () => {
   
   useEffect(() => {
     // Calculate progress if the user is enrolled
-    if (currentUser && course && currentUser.enrolledCourses.some(c => 
-      typeof c === 'string' ? c === course.id : c.id === course.id)) {
+    if (currentUser && course && currentUser.enrolledCourses && 
+        currentUser.enrolledCourses.some(c => 
+          typeof c === 'string' ? c === course.id : c.id === course.id)) {
       // Count completed lessons
       let totalLessons = 0;
       let completedCount = 0;
@@ -91,8 +91,8 @@ const CourseDetail = () => {
     }
   };
 
-  // Safe check if user is enrolled - prevents errors when currentUser is null
-  const isEnrolled = currentUser ? 
+  // Safe check if user is enrolled - prevents errors when currentUser is null or enrolledCourses is undefined
+  const isEnrolled = currentUser && currentUser.enrolledCourses ? 
     currentUser.enrolledCourses.some(c => typeof c === 'string' ? c === course.id : c.id === course.id) : false;
   
   const handleLessonClick = (lessonId: string, isLocked: boolean | undefined) => {
