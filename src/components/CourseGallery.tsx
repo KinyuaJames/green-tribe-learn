@@ -36,7 +36,7 @@ const CourseGallery: React.FC<CourseGalleryProps> = ({ category = 'all' }) => {
 
   // Check if user is enrolled in a specific course
   const isEnrolled = (courseId: string) => {
-    return currentUser?.enrolledCourses?.includes(courseId) || false;
+    return currentUser?.enrolledCourses?.some(c => typeof c === 'string' ? c === courseId : c.id === courseId) || false;
   };
 
   return (

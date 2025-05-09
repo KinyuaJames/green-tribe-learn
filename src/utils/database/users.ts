@@ -4,7 +4,7 @@ import { users, generateId } from './mock-data';
 
 // User Functions
 export const getUserById = (id: string) => {
-  const user = users.find(u => u.id === id);
+  const user = users.find(u => u.id === userId);
   if (user) {
     // Create a copy without the password
     const { password: _, ...userWithoutPassword } = user;
@@ -30,7 +30,9 @@ export const addStudyNote = (userId: string, note: StudyNoteInput) => {
     id: generateId(),
     title: note.title,
     content: note.content,
-    type: note.type,
+    type: note.type || 'note',
+    imageUrl: 'https://images.unsplash.com/photo-1598550476439-6847785fcea6', // Default image
+    description: note.title,
     createdAt: new Date().toISOString(),
     moduleId: note.moduleId,
     moduleName: note.moduleName,

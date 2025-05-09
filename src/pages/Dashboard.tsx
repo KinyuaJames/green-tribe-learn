@@ -65,11 +65,13 @@ const Dashboard = () => {
             <TabsContent value="courses" className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {currentUser?.enrolledCourses?.length > 0 ? (
-                  currentUser.enrolledCourses.map(courseId => {
+                  currentUser.enrolledCourses.map((courseId, index) => {
+                    // Use index as fallback key if courseId isn't a string
+                    const courseKey = typeof courseId === 'string' ? courseId : index;
                     // Mock course data for now
                     const course = {
-                      id: courseId,
-                      title: courseId === "1" ? "Biophilic Design Fundamentals" : "Advanced Course",
+                      id: typeof courseId === 'string' ? courseId : courseId.id,
+                      title: courseKey === "1" ? "Biophilic Design Fundamentals" : "Advanced Course",
                       instructor: "Wangui Mwangi",
                       progress: 65,
                       lastLesson: "Traditional Materials in Modern Context",
@@ -77,7 +79,7 @@ const Dashboard = () => {
                     };
                     
                     return (
-                      <Card key={course.id} className="overflow-hidden">
+                      <Card key={courseKey} className="overflow-hidden">
                         <div className="h-40 overflow-hidden">
                           <img 
                             src={course.image} 
@@ -293,7 +295,7 @@ const Dashboard = () => {
                       </div>
                       <Button 
                         className="w-full bg-biophilic-earth hover:bg-biophilic-earth/90"
-                        onClick={() => navigate('/biophilic-tribe')}
+                        onClick={() => navigate('/tribe')}
                       >
                         Visit Biophilic Tribe
                       </Button>

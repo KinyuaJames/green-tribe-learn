@@ -12,16 +12,6 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
 });
 
-// Custom marker icon
-const customIcon = L.icon({
-  iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
-  shadowSize: [41, 41],
-});
-
 // Indigenous design locations
 const locations = [
   {
@@ -130,6 +120,16 @@ const locations = [
   },
 ];
 
+// Create custom icon for markers
+const customIcon = new L.Icon({
+  iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+  shadowSize: [41, 41]
+});
+
 const InteractiveMap: React.FC = () => {
   const mapRef = useRef<L.Map | null>(null);
   const [activeLocation, setActiveLocation] = useState<number | null>(null);
@@ -144,6 +144,10 @@ const InteractiveMap: React.FC = () => {
       }
     }
   }, [activeLocation]);
+
+  const setMapRef = (map: L.Map) => {
+    mapRef.current = map;
+  };
 
   return (
     <div className="relative">
@@ -168,22 +172,20 @@ const InteractiveMap: React.FC = () => {
 
       <div style={{ height: '600px', width: '100%' }} className="rounded-lg overflow-hidden shadow-xl">
         <MapContainer 
-          center={[5, 20]} 
-          zoom={3} 
+          ref={setMapRef}
+          center={[5, 20]}
+          zoom={3}
           style={{ height: '100%', width: '100%' }}
           className="z-0"
-          whenCreated={(map) => { mapRef.current = map; }}
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
           
           {locations.map((location) => (
             <Marker 
               key={location.id}
               position={location.position}
-              icon={customIcon}
               eventHandlers={{
                 click: () => {
                   setActiveLocation(location.id);

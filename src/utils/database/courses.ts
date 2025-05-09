@@ -20,7 +20,10 @@ export const enrollUserInCourse = (userId: string, courseId: string) => {
   }
   
   // Check if already enrolled
-  if (user.enrolledCourses.includes(courseId)) {
+  const isEnrolled = user.enrolledCourses.some(c => 
+    typeof c === 'string' ? c === courseId : c.id === courseId);
+  
+  if (isEnrolled) {
     return false;
   }
   

@@ -19,6 +19,7 @@ export interface Course {
   rating?: number;
   studentsCount?: number;
   isFeatured?: boolean;
+  category?: string;
 }
 
 export interface Module {
@@ -54,8 +55,8 @@ export interface StudyItem {
   content: string;
   moduleId?: string; 
   moduleName?: string;
-  courseId?: string; // Added to fix type errors
-  lessonId?: string; // Added to fix type errors
+  courseId?: string;
+  lessonId?: string;
 }
 
 export interface Resource {
@@ -76,10 +77,10 @@ export interface User {
   courses: Course[];
   password?: string;
   fullName?: string;
-  enrolledCourses?: Course[];
-  completedLessons?: string[];
-  quizAttempts?: QuizAttempt[];
-  studyGallery?: StudyItem[];
+  enrolledCourses: (Course | string)[];
+  completedLessons: string[];
+  quizAttempts: QuizAttempt[];
+  studyGallery: StudyItem[];
   badges?: Badge[];
   certificates?: Certificate[];
   completedQuizzes?: string[];
