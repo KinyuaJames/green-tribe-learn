@@ -21,7 +21,7 @@ const StudyGallery: React.FC<StudyGalleryProps> = ({ filter = 'all' }) => {
       setCaseStudies(studies);
     } else {
       const filtered = studies.filter(study => 
-        study.tags.includes(filter)
+        study.tags && study.tags.includes(filter)
       );
       setCaseStudies(filtered);
     }
@@ -43,12 +43,12 @@ const StudyGallery: React.FC<StudyGalleryProps> = ({ filter = 'all' }) => {
             </div>
             <CardContent className="p-5">
               <div className="flex flex-wrap gap-2 mb-2">
-                {study.tags.slice(0, 3).map((tag: string, index: number) => (
+                {study.tags && study.tags.slice(0, 3).map((tag: string, index: number) => (
                   <Badge key={index} variant="outline" className="bg-biophilic-sand/10">
                     {tag}
                   </Badge>
                 ))}
-                {study.tags.length > 3 && (
+                {study.tags && study.tags.length > 3 && (
                   <Badge variant="outline" className="bg-biophilic-sand/10">
                     +{study.tags.length - 3}
                   </Badge>

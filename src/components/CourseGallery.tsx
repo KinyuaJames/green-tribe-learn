@@ -4,7 +4,8 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Course, getCourses } from '@/utils/database';
+import { Course } from '@/data/courses';
+import { getCourses } from '@/utils/database';
 import { useAuth } from '@/contexts/AuthContext';
 import ImageWithFallback from './ImageWithFallback';
 import '../styles/image-styles.css';
@@ -22,7 +23,15 @@ const CourseGallery: React.FC<CourseGalleryProps> = ({ category = 'all' }) => {
     const filteredCourses = category === 'all' 
       ? allCourses 
       : allCourses.filter(course => course.tags?.includes(category));
-    setCourses(filteredCourses);
+    
+    // Convert to component Course type
+    const componentCourses = filteredCourses.map(course => ({
+      ...course,
+      imageUrl: course.image || course.imageUrl,
+      image: course.imageUrl || course.image,
+    }));
+    
+    setCourses(componentCourses);
   }, [category]);
 
   // Check if user is enrolled in a specific course

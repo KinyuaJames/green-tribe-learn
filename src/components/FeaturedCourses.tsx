@@ -4,7 +4,8 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Course, getCourses } from '@/utils/database';
+import { Course } from '@/data/courses';
+import { getCourses } from '@/utils/database';
 import { useAuth } from '@/contexts/AuthContext';
 import ImageWithFallback from './ImageWithFallback';
 import '../styles/image-styles.css';
@@ -59,7 +60,14 @@ const FeaturedCourses = () => {
   useEffect(() => {
     const allCourses = getCourses();
     // Filter to show only featured courses
-    const featuredCourses = allCourses.filter(course => course.isFeatured);
+    const featuredCourses = allCourses
+      .filter(course => course.isFeatured)
+      .map(course => ({
+        ...course,
+        imageUrl: course.image || course.imageUrl,
+        image: course.imageUrl || course.image,
+      }));
+    
     setCourses(featuredCourses);
   }, []);
 

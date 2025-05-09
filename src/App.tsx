@@ -21,6 +21,8 @@ import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
+import SubmitCaseStudy from "./pages/SubmitCaseStudy";
+import StudyGallery from "./pages/StudyGallery";
 
 // Scroll to top component
 const ScrollToTop = () => {
@@ -63,6 +65,8 @@ const App = () => {
               <Route path="/case-study/:caseStudyId" element={<CaseStudyDetail />} />
               <Route path="/indigenous-map" element={<IndigenousMap />} />
               <Route path="/biophilic-tribe" element={<Tribe />} />
+              <Route path="/submit-case-study" element={<SubmitCaseStudy />} />
+              <Route path="/study-gallery" element={<StudyGallery />} />
               <Route path="/about" element={<About />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />

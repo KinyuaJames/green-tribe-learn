@@ -1,15 +1,16 @@
 
 import { getCourseById } from '@/utils/database';
+import { Course as DatabaseCourse } from '@/utils/database/types';
 
-// Make sure the Course interface reflects what's actually used
+// This Course interface aligns with what's used in the components
 export interface Course {
   id: string;
   title: string;
   description: string;
-  imageUrl: string;
+  imageUrl?: string;
   image?: string; 
   modules: any[];
-  createdAt: string;
+  createdAt?: string;
   instructor?: string;
   instructorImage?: string;
   duration?: string;
@@ -24,6 +25,21 @@ export interface Course {
   isFeatured?: boolean;
   category?: string;
 }
+
+// Helper function to convert database course to component course
+export const convertDatabaseCourse = (dbCourse: DatabaseCourse): Course => {
+  return {
+    ...dbCourse,
+    imageUrl: dbCourse.image || dbCourse.imageUrl,
+    image: dbCourse.imageUrl || dbCourse.image,
+  };
+};
+
+// Get course by ID with proper conversion
+export const getCourse = (id: string): Course | null => {
+  const dbCourse = getCourseById(id);
+  return dbCourse ? convertDatabaseCourse(dbCourse) : null;
+};
 
 // Just a re-export to fix the import issue
 export { getCourseById };
