@@ -159,7 +159,7 @@ const InteractiveMap: React.FC = () => {
       {/* Map Container */}
       <div className="w-full h-[70vh] rounded-lg shadow-lg overflow-hidden">
         <MapContainer 
-          defaultCenter={position} 
+          center={position} 
           zoom={2.5} 
           style={{ height: '100%', width: '100%' }}
           className="z-10"

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -87,7 +86,7 @@ const CaseStudyDetail = () => {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      <main className="flex-grow py-10 px-4">
+      <main className="flex-grow pt-36 pb-16 px-4">
         <div className="container mx-auto max-w-5xl">
           <Link to="/case-studies" className="inline-flex items-center text-biophilic-earth hover:underline mb-6">
             <ArrowLeft className="h-4 w-4 mr-2" />

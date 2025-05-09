@@ -1,160 +1,100 @@
-
 import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-
-import { useAuth } from '@/contexts/AuthContext';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Mail, Lock } from "lucide-react";
-
-const formSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address" }),
-  password: z.string().min(8, { message: "Password must be at least 8 characters long" }),
-  rememberMe: z.boolean().optional(),
-});
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate, Link } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const Login = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // Get the redirect path from the location state or default to dashboard
-  const from = location.state?.from || "/dashboard";
-  
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-      rememberMe: false,
-    },
-  });
+  const navigate = useNavigate();
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsSubmitting(true);
-    
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
     try {
-      const success = await login(values.email, values.password);
-      
-      if (success) {
-        // Redirect to the page they were trying to access
-        navigate(from);
-      }
+      await login(email, password);
+      toast.success('Login successful!');
+      navigate('/dashboard');
+    } catch (error) {
+      toast.error('Failed to login. Please check your credentials.');
+      console.error(error);
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      <main className="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-background">
-        <div className="w-full max-w-md space-y-8">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-biophilic-earth">Welcome Back</h1>
-            <p className="mt-2 text-foreground/70">Log in to continue your learning journey</p>
-          </div>
-          
-          <div className="bg-white p-8 rounded-lg shadow-sm border border-border">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email address</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                          <Input placeholder="you@example.com" className="pl-10" {...field} />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                          <Input placeholder="••••••••" type="password" className="pl-10" {...field} />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <div className="flex items-center justify-between">
-                  <FormField
-                    control={form.control}
-                    name="rememberMe"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center space-x-2 space-y-0">
-                        <FormControl>
-                          <Checkbox 
-                            checked={field.value} 
-                            onCheckedChange={field.onChange} 
-                          />
-                        </FormControl>
-                        <FormLabel className="text-sm font-normal cursor-pointer">Remember me</FormLabel>
-                      </FormItem>
-                    )}
+      <main className="flex-grow pt-36 pb-16 px-4 flex items-center justify-center">
+        <div className="w-full max-w-md">
+          <Card className="border-biophilic-sand/30">
+            <CardHeader className="space-y-1">
+              <CardTitle className="text-2xl text-center">Welcome back</CardTitle>
+              <CardDescription className="text-center">
+                Enter your email and password to login to your account
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    placeholder="your@email.com" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
                   />
-                  
-                  <Link 
-                    to="/forgot-password" 
-                    className="text-sm font-medium text-biophilic-earth hover:text-biophilic-earth/90"
-                  >
-                    Forgot password?
-                  </Link>
                 </div>
-                
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password">Password</Label>
+                    <Link 
+                      to="/forgot-password" 
+                      className="text-sm text-biophilic-earth hover:underline"
+                    >
+                      Forgot password?
+                    </Link>
+                  </div>
+                  <Input 
+                    id="password" 
+                    type="password" 
+                    placeholder="••••••••" 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
                 <Button 
                   type="submit" 
-                  className="w-full bg-biophilic-earth hover:bg-biophilic-earth/90"
-                  disabled={isSubmitting}
+                  className="w-full bg-gradient-to-r from-biophilic-earth to-biophilic-clay hover:opacity-90"
+                  disabled={isLoading}
                 >
-                  {isSubmitting ? 'Logging in...' : 'Log in'}
+                  {isLoading ? 'Logging in...' : 'Login'}
                 </Button>
-                
-                <div className="text-center pt-2">
-                  <p className="text-sm text-muted-foreground">
-                    Don't have an account?{" "}
-                    <Link 
-                      to="/signup" 
-                      className="font-medium text-biophilic-earth hover:text-biophilic-earth/90"
-                    >
-                      Sign up
-                    </Link>
-                  </p>
-                </div>
               </form>
-            </Form>
-          </div>
+            </CardContent>
+            <CardFooter className="flex flex-col space-y-4">
+              <div className="text-center text-sm">
+                Don't have an account?{' '}
+                <Link to="/signup" className="text-biophilic-earth hover:underline">
+                  Sign up
+                </Link>
+              </div>
+            </CardFooter>
+          </Card>
         </div>
       </main>
       

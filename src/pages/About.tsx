@@ -1,16 +1,18 @@
-
 import React from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { Link } from 'react-router-dom';
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from '@/components/ui/breadcrumb';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 
 const About = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      <main className="flex-grow">
+      <main className="flex-grow pt-36 pb-16 px-4">
         <section className="py-20 bg-biophilic-sand/10">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">

@@ -62,7 +62,7 @@ const App = () => {
               <Route path="/case-studies" element={<CaseStudyGallery />} />
               <Route path="/case-study/:caseStudyId" element={<CaseStudyDetail />} />
               <Route path="/indigenous-map" element={<IndigenousMap />} />
-              <Route path="/tribe/:tribeId" element={<Tribe />} />
+              <Route path="/tribe" element={<Tribe />} />
               <Route path="/about" element={<About />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />

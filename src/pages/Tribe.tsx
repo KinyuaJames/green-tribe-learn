@@ -78,7 +78,7 @@ const Tribe = () => {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      <main className="flex-grow py-16 pattern-bg">
+      <main className="flex-grow pt-36 pb-16 pattern-bg">
         <div className="container mx-auto px-4">
           <h1 className="text-4xl md:text-5xl font-bold text-biophilic-earth mb-8 text-center">
             Biophilic Tribe
