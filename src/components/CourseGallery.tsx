@@ -21,7 +21,7 @@ const CourseGallery: React.FC<CourseGalleryProps> = ({ category = 'all' }) => {
     const allCourses = getCourses();
     const filteredCourses = category === 'all' 
       ? allCourses 
-      : allCourses.filter(course => course.category === category);
+      : allCourses.filter(course => course.tags?.includes(category));
     setCourses(filteredCourses);
   }, [category]);
 

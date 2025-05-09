@@ -21,7 +21,6 @@ const StudyGallery: React.FC<StudyGalleryProps> = ({ filter = 'all' }) => {
       setCaseStudies(studies);
     } else {
       const filtered = studies.filter(study => 
-        study.category === filter || 
         study.tags.includes(filter)
       );
       setCaseStudies(filtered);

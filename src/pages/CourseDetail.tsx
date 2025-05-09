@@ -1,6 +1,17 @@
-import React from 'react';
+
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertTriangle } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { getCourseById, enrollUserInCourse, isLessonCompleted, markLessonAsCompleted } from '@/utils/database';
+import { toast } from 'sonner';
 
 const CourseDetail = () => {
   const { courseId } = useParams();

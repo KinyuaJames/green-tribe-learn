@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, Certificate, MessageSquare, User } from 'lucide-react';
+import { BookOpen, Award, MessageSquare, User } from 'lucide-react';
 
 const Dashboard = () => {
   const { currentUser, logout } = useAuth();
@@ -89,7 +89,7 @@ const Dashboard = () => {
                 <BookOpen className="mr-2 h-4 w-4" /> My Courses
               </TabsTrigger>
               <TabsTrigger value="certificates" className="rounded-md data-[state=active]:bg-white">
-                <Certificate className="mr-2 h-4 w-4" /> Certificates
+                <Award className="mr-2 h-4 w-4" /> Certificates
               </TabsTrigger>
               <TabsTrigger value="discussions" className="rounded-md data-[state=active]:bg-white">
                 <MessageSquare className="mr-2 h-4 w-4" /> Discussions
@@ -186,7 +186,7 @@ const Dashboard = () => {
               ) : (
                 <Card className="p-8 text-center">
                   <CardContent className="pt-6">
-                    <Certificate className="mx-auto h-12 w-12 text-muted-foreground/70 mb-4" />
+                    <Award className="mx-auto h-12 w-12 text-muted-foreground/70 mb-4" />
                     <h3 className="text-lg font-medium mb-2">No Certificates Yet</h3>
                     <p className="text-muted-foreground mb-6">
                       Complete a course to earn your first certificate

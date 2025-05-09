@@ -1,6 +1,38 @@
-import React from 'react';
+
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Mail, User, Lock } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { useAuth } from '@/contexts/AuthContext';
+
+// Define form validation schema
+const formSchema = z.object({
+  fullName: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  confirmPassword: z.string(),
+  acceptTerms: z.boolean().refine(val => val === true, {
+    message: "You must accept the terms and conditions"
+  })
+}).refine(data => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"]
+});
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -37,7 +69,7 @@ const Signup = () => {
       <Navbar />
       
       <main className="flex-grow pt-36 pb-16 px-4">
-        <div className="w-full max-w-md space-y-8">
+        <div className="max-w-md mx-auto space-y-8">
           <div className="text-center">
             <h1 className="text-3xl font-bold text-biophilic-earth">Create an Account</h1>
             <p className="mt-2 text-foreground/70">Join our community of sustainability learners</p>
