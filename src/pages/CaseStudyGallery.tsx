@@ -75,7 +75,7 @@ const CaseStudyGallery = () => {
             </div>
           </div>
           
-          <StudyGallery category={selectedCategory} />
+          <StudyGallery filter={selectedCategory} />
           
           <div className="mt-12 text-center">
             <Button 
