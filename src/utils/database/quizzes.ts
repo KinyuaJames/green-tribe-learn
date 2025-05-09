@@ -8,8 +8,8 @@ export const saveQuizAttempt = (
   quizId: string, 
   score: number, 
   answers: number[], 
-  totalQuestions: number,
-  passed: boolean
+  totalQuestions: number = 0,
+  passed: boolean = false
 ) => {
   const user = users.find(u => u.id === userId);
   if (!user) return false;

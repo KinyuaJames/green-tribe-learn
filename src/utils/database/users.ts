@@ -1,10 +1,9 @@
-
 import { User, StudyNoteInput, StudyItem } from './types';
 import { users, generateId } from './mock-data';
 
 // User Functions
 export const getUserById = (id: string) => {
-  const user = users.find(u => u.id === userId);
+  const user = users.find(u => u.id === id);
   if (user) {
     // Create a copy without the password
     const { password: _, ...userWithoutPassword } = user;
