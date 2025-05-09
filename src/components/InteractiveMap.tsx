@@ -1,272 +1,214 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import { Button } from './ui/button';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from './ui/sheet';
 
-// Fix for default marker icons in Leaflet with React
-// This is needed because the default icons don't load properly in React
-import icon from 'leaflet/dist/images/marker-icon.png';
-import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+// Fix Leaflet icon issues
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+});
 
-let DefaultIcon = L.icon({
-  iconUrl: icon,
-  shadowUrl: iconShadow,
+// Custom marker icon
+const customIcon = L.icon({
+  iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
-  shadowSize: [41, 41]
+  shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+  shadowSize: [41, 41],
 });
 
-L.Marker.prototype.options.icon = DefaultIcon;
-
-// Interface for tribe data
-interface Tribe {
-  id: string;
-  name: string;
-  location: {
-    lat: number;
-    lng: number;
-  };
-  country: string;
-  description: string;
-  architecturalFeatures: string[];
-  materials: string[];
-  spiritualSignificance?: string;
-  imageUrl?: string;
-  sustainablePractices?: string[];
-}
-
-// Sample tribe data
-const tribes: Tribe[] = [
+// Indigenous design locations
+const locations = [
   {
-    id: 'ndebele',
-    name: 'Ndebele',
-    location: { lat: -25.8, lng: 29.2 },
-    country: 'South Africa',
-    description: 'The Ndebele people are known for their distinctive and colorful geometric patterns used in their architecture and art.',
-    architecturalFeatures: [
-      'Geometric painted patterns',
-      'Symmetrical designs',
-      'Courtyard layout'
-    ],
-    materials: [
-      'Clay',
-      'Cow dung',
-      'Natural pigments'
-    ],
-    spiritualSignificance: 'The colorful patterns and designs carry symbolic meanings related to family history, prayers, and communication with ancestors.',
-    imageUrl: '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png',
-    sustainablePractices: [
-      'Natural cooling through thick walls',
-      'Local material sourcing',
-      'Passive ventilation systems'
+    id: 1,
+    name: 'Dogon',
+    position: [14.3, -3.6],
+    country: 'Mali',
+    description: 'The Dogon people are known for their distinctive mud brick architecture, including sacred togunas (low-ceiling meeting places) and granaries with thatched, conical roofs.',
+    features: [
+      'Mud brick construction',
+      'Astronomically aligned villages',
+      'Use of symbolic sculptures in architecture',
+      'Cliff-side building techniques'
     ]
   },
   {
-    id: 'dogon',
-    name: 'Dogon',
-    location: { lat: 14.5, lng: -3.5 },
-    country: 'Mali',
-    description: 'The Dogon people build their homes into the Bandiagara Escarpment, creating a unique cliff-dwelling architecture.',
-    architecturalFeatures: [
-      'Cliff-integrated structures',
-      'Granaries with conical thatched roofs',
-      'Toguna (meeting places) with thick wooden pillars'
-    ],
-    materials: [
-      'Mud brick',
-      'Stone',
-      'Wood',
-      'Thatch'
-    ],
-    spiritualSignificance: 'Architecture reflects cosmic beliefs, with home layouts representing the human body and the universe.',
-    imageUrl: '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png'
-  },
-  {
-    id: 'zulu',
-    name: 'Zulu',
-    location: { lat: -28.8, lng: 31.5 },
+    id: 2,
+    name: 'Ndebele',
+    position: [-25.8, 29.2],
     country: 'South Africa',
-    description: 'The Zulu people create beehive-shaped dwellings known as "indlu" arranged in circular homesteads.',
-    architecturalFeatures: [
-      'Domed "beehive" structures',
-      'Circular layout of homesteads',
-      'Central cattle enclosure'
-    ],
-    materials: [
-      'Flexible saplings',
-      'Grass thatching',
-      'Woven grass mats'
-    ],
-    imageUrl: '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png'
+    description: 'The Ndebele are renowned for their vibrant, geometric patterns painted on houses. These colorful designs evolved as a form of cultural resistance and identity preservation.',
+    features: [
+      'Geometric painted patterns',
+      'Bright, contrasting colors',
+      'Beadwork-inspired designs',
+      'Symbolic cultural messaging'
+    ]
   },
   {
-    id: 'maasai',
+    id: 3,
     name: 'Maasai',
-    location: { lat: -3.2, lng: 37.5 },
-    country: 'Kenya/Tanzania',
-    description: 'The Maasai build enkang - circular compounds enclosed by acacia thorn bushes, with small homes made by women.',
-    architecturalFeatures: [
-      'Circular layout of villages',
-      'Low, small dwellings',
-      'Protective thorn bush fencing'
-    ],
-    materials: [
-      'Wooden frames',
-      'Mixture of mud, sticks, grass',
-      'Cow dung and urine (as waterproofing)'
-    ],
-    imageUrl: '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png'
+    position: [-2.9, 37.5],
+    country: 'Kenya & Tanzania',
+    description: 'Maasai enkaji (houses) are built by women using a framework of timber poles, interwoven with a lattice of smaller branches, covered with a mixture of mud, grass, cow dung, and ash.',
+    features: [
+      'Circular layouts for environmental protection',
+      'Natural, locally-sourced materials',
+      'Low doorways for defense',
+      'Central cattle enclosures'
+    ]
   },
   {
-    id: 'ashanti',
-    name: 'Ashanti',
-    location: { lat: 6.7, lng: -1.6 },
+    id: 4,
+    name: 'Asante',
+    position: [6.7, -1.6],
     country: 'Ghana',
-    description: 'Traditional Ashanti buildings feature rectangular designs with steep thatch roofs and intricate symbolic decorations.',
-    architecturalFeatures: [
-      'Rectangular floor plans',
-      'Steep four-sided roofs',
-      'Central courtyard layouts',
-      'Carved wooden decoration'
-    ],
-    materials: [
-      'Wood frame',
-      'Wattle and daub walls',
-      'Palm frond or grass thatch'
-    ],
-    imageUrl: '/lovable-uploads/bcac50e7-5c57-4a7d-b36e-aebbe083f46c.png'
-  }
+    description: 'Traditional Ashanti architecture features shrines and palaces with intricate symbolic adinkra symbols, using a post-and-beam system with walls filled with clay and palm branches.',
+    features: [
+      'Carved wooden support posts',
+      'Symbolic adinkra patterning',
+      'Courtyard-centered designs',
+      'Natural cooling ventilation techniques'
+    ]
+  },
+  {
+    id: 5,
+    name: 'Nubian',
+    position: [21.8, 31.3],
+    country: 'Sudan & Egypt',
+    description: 'Nubian architecture uses thick mudbrick walls for thermal mass. The distinctive vaulted dome roofs and geometric patterns reflect ancient design techniques for desert climate adaptation.',
+    features: [
+      'Vaulted dome roofs',
+      'Thick thermal walls',
+      'Interior courtyards for cooling',
+      'White reflective exteriors'
+    ]
+  },
+  {
+    id: 6,
+    name: 'Hausa',
+    position: [12.0, 8.5],
+    country: 'Nigeria & Niger',
+    description: 'Hausa architecture includes distinctive earth and adobe buildings with elaborate facades. The architecture incorporates geometric patterns, mihrabs (prayer niches), and flat roofs with water spouts.',
+    features: [
+      'Adobe construction',
+      'Elaborate façade decorations',
+      'Tubali (dried earth) reinforcement',
+      'Symbolic entrance designs'
+    ]
+  },
+  {
+    id: 7,
+    name: 'Swahili',
+    position: [-2.1, 40.9],
+    country: 'Kenya',
+    description: 'Swahili architecture along the East African coast combines African, Arab, and Indian influences. Stone buildings feature carved doors, inner courtyards, and coral rag limestone construction.',
+    features: [
+      'Intricately carved wooden doors',
+      'Coral stone construction',
+      'Ventilated inner courtyards',
+      'Barazas (stone benches)'
+    ]
+  },
+  {
+    id: 8,
+    name: 'Zulu',
+    position: [-28.5, 31.4],
+    country: 'South Africa',
+    description: 'Traditional Zulu dwellings are dome-shaped structures called indlu, built using a framework of pliable branches covered with thatch and woven mats, arranged in a circular homestead.',
+    features: [
+      'Dome-shaped beehive huts',
+      'Circular protective village layouts',
+      'Natural thatch waterproofing',
+      'Central cattle enclosure (isibaya)'
+    ]
+  },
 ];
 
 const InteractiveMap: React.FC = () => {
-  const [selectedTribe, setSelectedTribe] = useState<Tribe | null>(null);
-  const [sheetOpen, setSheetOpen] = useState(false);
-  
-  const handleMarkerClick = (tribe: Tribe) => {
-    setSheetOpen(true);
-    setSelectedTribe(tribe);
-  };
+  const mapRef = useRef<L.Map | null>(null);
+  const [activeLocation, setActiveLocation] = useState<number | null>(null);
 
-  // Center position for the map
-  const center = [4.0, 19.0]; // Center on Africa
-  
+  useEffect(() => {
+    if (activeLocation !== null && mapRef.current) {
+      const location = locations.find(loc => loc.id === activeLocation);
+      if (location) {
+        mapRef.current.flyTo(location.position, 8, {
+          duration: 1.5
+        });
+      }
+    }
+  }, [activeLocation]);
+
   return (
-    <div className="relative w-full min-h-[70vh] bg-muted/20">
-      {/* Map Container */}
-      <div className="w-full h-[70vh] rounded-lg shadow-lg overflow-hidden">
+    <div className="relative">
+      <div className="bg-white/90 backdrop-blur-sm p-4 rounded-lg shadow-md mb-4">
+        <h3 className="text-lg font-semibold text-biophilic-earth mb-3">Indigenous Design Traditions</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          {locations.map(location => (
+            <button
+              key={location.id}
+              className={`px-3 py-2 rounded-md text-sm transition-colors ${
+                activeLocation === location.id 
+                  ? 'bg-biophilic-earth text-white' 
+                  : 'bg-biophilic-sand/20 hover:bg-biophilic-sand/30'
+              }`}
+              onClick={() => setActiveLocation(location.id)}
+            >
+              {location.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ height: '600px', width: '100%' }} className="rounded-lg overflow-hidden shadow-xl">
         <MapContainer 
-          center={center as [number, number]}
-          zoom={2.5}
+          center={[5, 20]} 
+          zoom={3} 
           style={{ height: '100%', width: '100%' }}
-          className="z-10"
+          className="z-0"
+          whenCreated={(map) => { mapRef.current = map; }}
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
           
-          {tribes.map((tribe) => (
+          {locations.map((location) => (
             <Marker 
-              key={tribe.id}
-              position={[tribe.location.lat, tribe.location.lng]}
+              key={location.id}
+              position={location.position}
+              icon={customIcon}
               eventHandlers={{
                 click: () => {
-                  handleMarkerClick(tribe);
-                },
+                  setActiveLocation(location.id);
+                }
               }}
             >
               <Popup>
-                <div className="text-center">
-                  <h3 className="font-medium">{tribe.name}</h3>
-                  <p className="text-xs text-muted-foreground">{tribe.country}</p>
-                  <Button 
-                    variant="link" 
-                    size="sm"
-                    className="p-0 h-auto text-xs mt-1"
-                    onClick={() => {
-                      handleMarkerClick(tribe);
-                    }}
-                  >
-                    View Details
-                  </Button>
+                <div className="p-1">
+                  <h3 className="font-semibold text-biophilic-earth">{location.name}</h3>
+                  <p className="text-xs text-muted-foreground mb-2">{location.country}</p>
+                  <p className="text-sm mb-2">{location.description}</p>
+                  <div className="text-xs">
+                    <strong>Key Features:</strong>
+                    <ul className="list-disc pl-4 mt-1">
+                      {location.features.map((feature, idx) => (
+                        <li key={idx}>{feature}</li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               </Popup>
             </Marker>
           ))}
         </MapContainer>
       </div>
-      
-      {/* Tribe Detail Sheet */}
-      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="overflow-y-auto">
-          {selectedTribe && (
-            <>
-              <SheetHeader>
-                <SheetTitle className="text-2xl text-biophilic-earth">{selectedTribe.name}</SheetTitle>
-                <SheetDescription className="text-base text-foreground">{selectedTribe.country}</SheetDescription>
-              </SheetHeader>
-              
-              <div className="mt-6">
-                <div className="mb-6 rounded-lg overflow-hidden">
-                  {selectedTribe.imageUrl && (
-                    <img 
-                      src={selectedTribe.imageUrl} 
-                      alt={`${selectedTribe.name} architecture`}
-                      className="w-full h-auto object-cover"
-                    />
-                  )}
-                </div>
-                
-                <div className="space-y-6">
-                  <div>
-                    <p className="text-foreground/80">{selectedTribe.description}</p>
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-lg font-medium mb-2 text-biophilic-earth">Architectural Features</h3>
-                    <ul className="list-disc pl-5 space-y-1">
-                      {selectedTribe.architecturalFeatures.map((feature, i) => (
-                        <li key={i} className="text-foreground/80">{feature}</li>
-                      ))}
-                    </ul>
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-lg font-medium mb-2 text-biophilic-earth">Building Materials</h3>
-                    <ul className="list-disc pl-5 space-y-1">
-                      {selectedTribe.materials.map((material, i) => (
-                        <li key={i} className="text-foreground/80">{material}</li>
-                      ))}
-                    </ul>
-                  </div>
-                  
-                  {selectedTribe.spiritualSignificance && (
-                    <div>
-                      <h3 className="text-lg font-medium mb-2 text-biophilic-earth">Spiritual Significance</h3>
-                      <p className="text-foreground/80">{selectedTribe.spiritualSignificance}</p>
-                    </div>
-                  )}
-                  
-                  {selectedTribe.sustainablePractices && (
-                    <div>
-                      <h3 className="text-lg font-medium mb-2 text-biophilic-earth">Sustainable Practices</h3>
-                      <ul className="list-disc pl-5 space-y-1">
-                        {selectedTribe.sustainablePractices.map((practice, i) => (
-                          <li key={i} className="text-foreground/80">{practice}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </>
-          )}
-        </SheetContent>
-      </Sheet>
     </div>
   );
 };
