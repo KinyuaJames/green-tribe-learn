@@ -43,13 +43,23 @@ const Navbar = () => {
     setIsLoggingIn(true);
     
     try {
-      await login(email, password);
-      setLoginDialogOpen(false);
-      toast.success('Login successful');
+      const success = await login(email, password);
+      if (success) {
+        setLoginDialogOpen(false);
+        navigate('/dashboard');
+      }
     } catch (error) {
-      toast.error('Login failed. Please check your credentials.');
+      console.error(error);
     } finally {
       setIsLoggingIn(false);
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
+    // If on a protected route, redirect to home
+    if (location.pathname === '/dashboard' || location.pathname.includes('/course/')) {
+      navigate('/');
     }
   };
 
@@ -122,7 +132,7 @@ const Navbar = () => {
                 <DropdownMenuContent align="end" className="w-56 rounded-xl border-biophilic-sand/30">
                   <DropdownMenuItem onClick={() => navigate('/dashboard')} className="rounded-lg cursor-pointer">Dashboard</DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => logout()} className="rounded-lg cursor-pointer text-red-500 hover:text-red-600">Logout</DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout} className="rounded-lg cursor-pointer text-red-500 hover:text-red-600">Logout</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (

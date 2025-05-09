@@ -64,26 +64,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signup = async (fullName: string, email: string, password: string) => {
     try {
-      // Make sure we're providing all the required fields based on the User type
-      const user = createUser({
+      const result = createUser({
         fullName,
         email,
-        password,
-        enrolledCourses: [],
-        completedLessons: [],
-        badges: [],
-        certificates: [],
-        role: 'student',
-        quizAttempts: [],
-        studyGallery: [],
-        completedQuizzes: []
+        password
       });
       
-      // The createUser function already returns user without password
-      setCurrentUser(user);
-      localStorage.setItem('currentUserId', user.id);
-      toast.success('Account created successfully!');
-      return true;
+      if (result.success && result.user) {
+        setCurrentUser(result.user);
+        localStorage.setItem('currentUserId', result.user.id);
+        toast.success('Account created successfully!');
+        return true;
+      } else {
+        toast.error(result.message || 'Signup failed');
+        return false;
+      }
     } catch (error: any) {
       toast.error(error.message || 'Signup failed');
       return false;
