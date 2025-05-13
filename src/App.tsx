@@ -7,19 +7,21 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { useEffect, useState } from "react";
 import Index from "./pages/Index";
-import Courses from "./pages/Courses";
-import CourseDetail from "./pages/CourseDetail";
-import LessonDetail from "./pages/LessonDetail";
-import CourseDiscussion from "./pages/CourseDiscussion";
-import CaseStudyGallery from "./pages/CaseStudyGallery";
-import CaseStudyDetail from "./pages/CaseStudyDetail";
-import IndigenousMap from "./pages/IndigenousMap";
-import Tribe from "./pages/Tribe";
-import About from "./pages/About";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
+import { 
+  Courses, 
+  CourseDetail, 
+  LessonDetail, 
+  CourseDiscussion, 
+  CaseStudyGallery,
+  CaseStudyDetail,
+  IndigenousMap,
+  Tribe,
+  Login,
+  Signup,
+  About,
+  Dashboard
+ } from "./pages/expo";
 import NotFound from "./pages/NotFound";
-import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import SubmitCaseStudy from "./pages/SubmitCaseStudy";
 import StudyGallery from "./pages/StudyGallery";
@@ -34,6 +36,8 @@ const ScrollToTop = () => {
   
   return null;
 };
+
+
 
 const App = () => {
   // Create a new QueryClient instance inside the component
@@ -64,7 +68,7 @@ const App = () => {
               <Route path="/case-studies" element={<CaseStudyGallery />} />
               <Route path="/case-study/:caseStudyId" element={<CaseStudyDetail />} />
               <Route path="/indigenous-map" element={<IndigenousMap />} />
-              <Route path="/biophilic-tribe" element={<Tribe />} />
+              <Route path="/tribe" element={<Tribe />} />
               <Route path="/submit-case-study" element={<SubmitCaseStudy />} />
               <Route path="/study-gallery" element={<StudyGallery />} />
               <Route path="/about" element={<About />} />

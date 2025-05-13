@@ -3,6 +3,7 @@ export interface Course {
   id: string;
   title: string;
   description: string;
+  progress?:number;
   imageUrl: string;
   image?: string; // Added for compatibility
   modules: Module[];
@@ -20,6 +21,7 @@ export interface Course {
   studentsCount?: number;
   isFeatured?: boolean;
   category?: string;
+
 }
 
 export interface Module {

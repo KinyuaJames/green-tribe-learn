@@ -13,9 +13,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getCourseById, enrollUserInCourse, isLessonCompleted, markLessonAsCompleted } from '@/utils/database';
 import { Course } from '@/data/courses';
 import { toast } from 'sonner';
-import VoiceRecorder from '@/components/VoiceRecorder';
-import Quiz from '@/components/Quiz';
-import ResourceVault from '@/components/ResourceVault';
 
 const CourseDetail = () => {
   const { courseId } = useParams<{ courseId: string }>();
@@ -38,7 +35,6 @@ const CourseDetail = () => {
       let completedCount = 0;
       
       course.modules.forEach(module => {
-        
         module.lessons.forEach(lesson => {
           totalLessons++;
           if (currentUser && isLessonCompleted(currentUser.id, lesson.id)) {
@@ -46,9 +42,9 @@ const CourseDetail = () => {
           }
         });
       });
+      
       const calculatedProgress = totalLessons > 0 ? (completedCount / totalLessons) * 100 : 0;
       setProgress(calculatedProgress);
-      course.progress = calculatedProgress;
     }
   }, [currentUser, course, selectedLesson]);
   

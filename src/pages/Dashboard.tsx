@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -10,11 +10,39 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen, Award, MessageSquare, User, FileText } from 'lucide-react';
 import { getStudyGallery } from '@/utils/database/users';
+import { Course, getCourses } from '@/utils/database';
+import Courses from './Courses';
 
 const Dashboard = () => {
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('courses');
+  
+
+  const [courses, setCourses] = useState<Course[]>([]);
+
+  useEffect(() => {
+    const allCourses = getCourses();
+    setCourses(allCourses);
+  }, []);
+
+  const isEnrolled = (courseId: string) => {
+    return currentUser?.enrolledCourses?.includes(courseId) || false;
+  };
+  const isUserEnrolledInAnyCourse = Object.values(courses).some(course =>
+    currentUser?.enrolledCourses.includes(course.id)
+  );
+
+  // const enrolledCourses = Object.values(courses).filter(course =>
+  //   currentUser?.enrolledCourses.includes(course.id)
+  // );
+  const enrolledCourses = courses.filter(course =>
+    currentUser?.enrolledCourses.includes(course.id)
+  );
+  
+  const lastCompletedLessonId = currentUser.completedLessons.at(-1);
+
+   console.log(enrolledCourses);
 
   // Get user study items if user is logged in
   const studyItems = currentUser ? getStudyGallery(currentUser.id) : [];
@@ -64,13 +92,31 @@ const Dashboard = () => {
             
             <TabsContent value="courses" className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {currentUser?.enrolledCourses?.length > 0 ? (
-                  currentUser.enrolledCourses.map((courseId, index) => {
+                {/* {currentUser?.enrolledCourses?.length > 0   && isEnrolled(course.id) ? ( */}
+                {/* {Object.values(Courses).some(course =>
+                  currentUser?.enrolledCourses.includes(course.id)
+                )} */}
+              
+
+                {/* {console.log({Object.values(Courses).some(course =>
+                  currentUser?.enrolledCourses.includes(course.id)
+                )})} */}
+                {currentUser?.enrolledCourses?.length > 0  ? (
+                  // currentUser.enrolledCourses.map((courseId, index) => {
+                    
+                  enrolledCourses.map((course, index) => {
+                    // {courses.map(course => (
                     // Use index as fallback key if courseId isn't a string
-                    const courseKey = typeof courseId === 'string' ? courseId : index;
+                    // const courseKey = typeof courseId === 'string' ? courseId : index;
+                    const courseKey = typeof course.id === 'string' ? course.id : index;
                     // Mock course data for now
-                    const course = {
-                      id: typeof courseId === 'string' ? courseId : courseId.id,
+                    
+
+
+
+                    const corz = {
+                      // id: typeof courseId === 'string' ? courseId : courseId.id,
+                      id: typeof course.id === 'string' ? course.id : course.id,
                       title: courseKey === "1" ? "Biophilic Design Fundamentals" : "Advanced Course",
                       instructor: "Wangui Mwangi",
                       progress: 65,
@@ -78,41 +124,48 @@ const Dashboard = () => {
                       image: "https://images.unsplash.com/photo-1618220179428-22790b461013"
                     };
                     
+                    console.log(currentUser)
                     return (
-                      <Card key={courseKey} className="overflow-hidden">
-                        <div className="h-40 overflow-hidden">
-                          <img 
-                            src={course.image} 
-                            alt={course.title} 
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <CardHeader>
-                          <CardTitle className="text-biophilic-earth">{course.title}</CardTitle>
-                          <CardDescription>Instructor: {course.instructor}</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                              <span>Progress</span>
-                              <span className="font-medium">{course.progress}%</span>
+                      // <div>
+                      //    {courses.map(course => (
+
+                        <Card key={course.id} className="overflow-hidden">
+                          <div className="h-40 overflow-hidden">
+                            <img 
+                              src={course.image} 
+                              alt={course.title} 
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <CardHeader>
+                            <CardTitle className="text-biophilic-earth">{course.title}</CardTitle>
+                            <CardDescription>Instructor: {course.instructor}</CardDescription>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div className="space-y-2">
+                              <div className="flex justify-between text-sm">
+                                <span>Progress</span>
+                                <span className="font-medium">{course.progress}%</span>
+                              </div>
+                              <Progress value={course.progress} className="h-2" />
                             </div>
-                            <Progress value={course.progress} className="h-2" />
-                          </div>
-                          <div className="text-sm">
-                            <span className="text-foreground/70">Last lesson: </span>
-                            <span className="font-medium">{course.lastLesson}</span>
-                          </div>
-                          <Button 
-                            className="w-full bg-biophilic-earth hover:bg-biophilic-earth/90"
-                            onClick={() => navigate(`/course/${course.id}`)}
-                          >
-                            Continue Learning
-                          </Button>
-                        </CardContent>
-                      </Card>
+                            <div className="text-sm">
+                              <span className="text-foreground/70">Last lesson: </span>
+                              {/* <span className="font-medium">{course.lastLesson}</span> */}
+                            </div>
+                            <Button 
+                              className="w-full bg-biophilic-earth hover:bg-biophilic-earth/90"
+                              onClick={() => navigate(`/course/${course.id}`)}
+                            >
+                              Continue Learning
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      //     ))}
+                      // </div>
                     );
-                  })
+                  }
+                  )
                 ) : (
                   <Card className="flex flex-col items-center justify-center p-6 border-dashed border-2 border-muted-foreground/20 bg-muted/5">
                     <div className="text-center space-y-4">

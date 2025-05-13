@@ -55,4 +55,5 @@ export const createUser = (userData: { email: string; password: string; fullName
 // Database Initialization
 export const initializeDatabase = () => {
   console.info('Database initialized');
+  console.info(users);
 };

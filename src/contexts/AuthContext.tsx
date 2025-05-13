@@ -27,6 +27,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Initialize the database
     initializeDatabase();
     
+    
     // Check if user is logged in
     const userId = localStorage.getItem('currentUserId');
     if (userId) {
@@ -101,6 +102,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
+
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
